@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h2>Voter Dashboard</h2>
+    {% for election in elections %}
+    <div class="card">
+        <h3>{{ election.title }}</h3>
+        {% if election.id in voted_elections %}
+            <p style="color:green; font-weight:bold;">✓ Vote Casted Successfully</p>
+        {% else %}
+            <form method="POST" action="{% url 'cast_vote' election.id %}">
+                {% csrf_token %}
+                {% for cand in election.candidates.all %}
+                    <p><input type="radio" name="candidate" value="{{ cand.id }}"> {{ cand.name }} ({{ cand.party_affinity }})</p>
+                {% endfor %}
+                <button type="submit" class="btn" style="background:green;">Submit Vote</button>
+            </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

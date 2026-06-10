@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h2>Admin Audit Dashboard</h2>
+    {% for election in elections %}
+    <div class="card">
+        <h3>{{ election.title }}</h3>
+        <ul>
+            {% for cand in election.candidates.all %}
+                <li><strong>{{ cand.name }}</strong>: {{ cand.votes_count }} votes</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

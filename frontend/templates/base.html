@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Voting System</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h2>🗳️ Online Voting System</h2>
+        {% if user.is_authenticated %}<a href="{% url 'logout' %}" style="color:white;">Logout</a>{% endif %}
+    </header>
+    {% block content %}{% endblock %}
+</body>
+</html>

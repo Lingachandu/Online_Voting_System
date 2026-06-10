@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h2>Verify OTP</h2>
+    {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Enter Code (Check your server command terminal output)</label>
+            <input type="text" name="otp" required>
+        </div>
+        <button type="submit" class="btn">Verify</button>
+    </form>
+</div>
+{% endblock %}
