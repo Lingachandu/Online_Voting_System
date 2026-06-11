@@ -29,10 +29,18 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'), 
         ('voter', 'Voter')
     )
+    STATE_CHOICES = (
+        ('ap', 'Andhra Pradesh'),
+        ('tg', 'Telangana'),
+        ('chennai', 'Chennai')
+    )
     
     username = None  # Remove default username field
     phone_number = models.CharField(max_length=15, unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='voter')
+    state = models.CharField(max_length=10, choices=STATE_CHOICES, blank=True, null=True)
+    aadhaar_number = models.CharField(max_length=12, blank=True, null=True)
+    face_image = models.TextField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
 
     objects = CustomUserManager()  # Hook the custom manager here

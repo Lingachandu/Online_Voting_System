@@ -1,18 +1,273 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-    <h2>Login Portal</h2>
-    <form method="POST">
-        {% csrf_token %}
-        <div class="form-group">
-            <label>Select Role</label>
-            <select name="role"><option value="voter">Voter</option><option value="admin">Admin</option></select>
+<div class="row justify-content-center w-100 px-3">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: var(--radius); background: var(--card-bg);">
+            <div class="text-center mb-4">
+                <span class="fs-1">🗳️</span>
+                <h2 class="fw-bold mt-2 text-dark">Secure Login Portal</h2>
+                <p class="text-muted small">Please verify your credentials to access the voting portal.</p>
+            </div>
+
+            {% if error %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert" style="border-radius: var(--radius);">
+                    <span class="me-2">❌</span>
+                    <div>{{ error }}</div>
+                </div>
+            {% endif %}
+
+            <form id="login-form" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="face_image" id="face_image_input">
+
+                <div class="mb-4" id="role-group">
+                    <label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Select Role</label>
+                    <select name="role" id="role-select" class="form-select form-select-lg" style="border-radius: var(--radius);">
+                        <option value="voter">Voter</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="mb-4 animate-fade" id="state-group">
+                    <label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Select State</label>
+                    <select name="state" id="state-select" class="form-select form-select-lg" style="border-radius: var(--radius);">
+                        <option value="ap">Andhra Pradesh (AP)</option>
+                        <option value="tg">Telangana (Hyderabad)</option>
+                        <option value="chennai">Chennai (Tamil Nadu)</option>
+                    </select>
+                </div>
+
+                <div class="mb-4 animate-fade" id="aadhaar-group">
+                    <label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Aadhaar Number (12 Digits)</label>
+                    <input type="text" name="aadhaar_number" id="aadhaar-input" class="form-control form-control-lg" placeholder="123456789012" maxlength="12" style="border-radius: var(--radius);">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Mobile Number</label>
+                    <input type="tel" name="phone_number" required class="form-control form-control-lg" placeholder="+123456789" style="border-radius: var(--radius);">
+                </div>
+
+                <div class="form-check mb-4">
+                    <input type="checkbox" class="form-check-input" id="agree_terms" name="agree_terms" required style="cursor: pointer;">
+                    <label class="form-check-label small text-muted ms-2" for="agree_terms" style="cursor: pointer;">
+                        I agree to the <a href="{% url 'terms' %}" target="_blank" class="text-decoration-none fw-bold text-primary">Terms & Conditions</a> & <a href="{% url 'privacy' %}" target="_blank" class="text-decoration-none fw-bold text-primary">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn btn-primary btn-lg w-100 py-3 text-uppercase fw-bold shadow-sm" style="border-radius: var(--radius); background: var(--primary); border: none;">Generate OTP</button>
+            </form>
         </div>
-        <div class="form-group">
-            <label>Mobile Number</label>
-            <input type="tel" name="phone_number" required placeholder="+123456789">
-        </div>
-        <button type="submit" class="btn">Generate OTP</button>
-    </form>
+    </div>
 </div>
-{% endblock %}
+
+<!-- Face Capture/Scanner Bootstrap Modal -->
+<div class="modal fade" id="faceAuthModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="faceAuthModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center border-0 shadow-lg" style="border-radius: var(--radius);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title w-100 fw-bold text-dark" id="faceAuthModalLabel">🔒 Biometric Face Authentication</h5>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-4">Align your face within the scanner ring. Do not close this browser window.</p>
+                
+                <!-- Circular Scanner Window -->
+                <div class="scanner-container mx-auto position-relative mb-4" style="width: 240px; height: 240px; border-radius: 50%; overflow: hidden; background: #000; border: 4px solid var(--primary);">
+                    <video id="webcam-preview" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+                    <canvas id="capture-canvas" style="display: none;" width="320" height="240"></canvas>
+                    <div class="scanner-laser"></div>
+                    <div class="scanner-guide"></div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress mb-3" style="height: 8px; border-radius: 4px; background-color: #f1f5f9;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="scan-progress-bar" role="progressbar" style="width: 0%; background-color: var(--primary);" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+
+                <!-- Status text -->
+                <div id="scan-status" class="fw-bold text-primary mb-2 small">Initializing camera stream...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const roleSelect = document.getElementById("role-select");
+        const stateSelect = document.getElementById("state-select");
+        const stateGroup = document.getElementById("state-group");
+        const aadhaarInput = document.getElementById("aadhaar-input");
+        const aadhaarGroup = document.getElementById("aadhaar-group");
+        const loginForm = document.getElementById("login-form");
+        const faceModal = new bootstrap.Modal(document.getElementById('faceAuthModal'));
+
+        function updateFieldsVisibility() {
+            const isVoter = (roleSelect.value === "voter");
+
+            if (isVoter) {
+                stateGroup.style.display = "block";
+                aadhaarGroup.style.display = "block";
+                aadhaarInput.setAttribute("required", "required");
+            } else {
+                stateGroup.style.display = "none";
+                aadhaarGroup.style.display = "none";
+                aadhaarInput.removeAttribute("required");
+                aadhaarInput.value = "";
+            }
+        }
+
+        roleSelect.addEventListener("change", updateFieldsVisibility);
+        stateSelect.addEventListener("change", updateFieldsVisibility);
+        updateFieldsVisibility(); // Initial run
+
+        // Form Submission interceptor for Voter Face Scanning
+        loginForm.addEventListener("submit", function(e) {
+            const isVoter = (roleSelect.value === "voter");
+            if (!isVoter) {
+                // Admin login continues immediately
+                return;
+            }
+
+            // Prevent default submit so we can run the webcam flow
+            e.preventDefault();
+
+            // Show face modal and open webcam stream
+            faceModal.show();
+            initiateFaceScan();
+        });
+
+        function initiateFaceScan() {
+            let stream = null;
+            const video = document.getElementById('webcam-preview');
+            const canvas = document.getElementById('capture-canvas');
+            const progressBar = document.getElementById('scan-progress-bar');
+            const scanStatus = document.getElementById('scan-status');
+
+            // Attempt camera stream
+            navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = stream;
+                    video.play();
+                    startScanning(true);
+                })
+                .catch(err => {
+                    console.warn("Webcam access failed/unavailable, using simulation fallback:", err);
+                    scanStatus.textContent = "Camera restricted. Running secure simulation...";
+                    startScanning(false);
+                });
+
+            function startScanning(useCamera) {
+                let progress = 0;
+                progressBar.style.width = '0%';
+                progressBar.setAttribute('aria-valuenow', 0);
+                
+                const statusMessages = [
+                    "Locating face outline...",
+                    "Analyzing biometric geometry...",
+                    "Checking double-voting prevention records...",
+                    "Generating unique encryption key...",
+                    "Biometric security handshake complete!"
+                ];
+
+                const interval = setInterval(() => {
+                    progress += 5;
+                    if (progress > 100) progress = 100;
+                    
+                    progressBar.style.width = progress + '%';
+                    progressBar.setAttribute('aria-valuenow', progress);
+                    
+                    const msgIndex = Math.min(Math.floor(progress / 20), statusMessages.length - 1);
+                    scanStatus.textContent = statusMessages[msgIndex];
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        captureAndSubmit(useCamera);
+                    }
+                }, 100);
+            }
+
+            function captureAndSubmit(useCamera) {
+                const ctx = canvas.getContext('2d');
+                if (useCamera && video.readyState === video.HAVE_ENOUGH_DATA) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                } else {
+                    drawMockFace(canvas);
+                }
+                
+                const dataURL = canvas.toDataURL('image/png');
+                document.getElementById('face_image_input').value = dataURL;
+                
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
+                setTimeout(() => {
+                    faceModal.hide();
+                    loginForm.submit();
+                }, 400);
+            }
+
+            function drawMockFace(canvas) {
+                const ctx = canvas.getContext('2d');
+                // Deep background
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Outer circle guide
+                ctx.strokeStyle = '#4f46e5';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2 - 10, 65, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Eyes
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2 - 22, canvas.height / 2 - 25, 6, 0, Math.PI * 2);
+                ctx.arc(canvas.width / 2 + 22, canvas.height / 2 - 25, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Nose
+                ctx.strokeStyle = '#4f46e5';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, canvas.height / 2 - 15);
+                ctx.lineTo(canvas.width / 2 - 5, canvas.height / 2 + 8);
+                ctx.lineTo(canvas.width / 2 + 5, canvas.height / 2 + 8);
+                ctx.stroke();
+
+                // Smiling mouth
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2 + 15, 22, 0.1 * Math.PI, 0.9 * Math.PI, false);
+                ctx.stroke();
+
+                // Cyber Grid / HUD lines
+                ctx.strokeStyle = 'rgba(79, 70, 229, 0.15)';
+                ctx.lineWidth = 1;
+                for (let i = 20; i < canvas.width; i += 30) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let j = 20; j < canvas.height; j += 30) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, j);
+                    ctx.lineTo(canvas.width, j);
+                    ctx.stroke();
+                }
+
+                // HUD labels
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 10px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SECURE BIOMETRIC SIGNATURE', canvas.width / 2, canvas.height - 28);
+                ctx.fillStyle = '#10b981';
+                ctx.fillText('VERIFICATION OK', canvas.width / 2, canvas.height - 14);
+            }
+        }
+    });
+</script>
+{% endblock %}

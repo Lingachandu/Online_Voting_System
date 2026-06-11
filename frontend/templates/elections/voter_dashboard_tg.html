@@ -1,22 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="dashboard-wrapper">
+<div class="dashboard-wrapper theme-tg">
     <!-- Navigation Bar -->
     <nav class="dashboard-nav">
-        <a href="#profile" class="nav-link active" data-tab="profile">👤 My Profile</a>
-        <a href="#voting-list" class="nav-link" data-tab="voting-list">🗳️ Voting List</a>
+        <a href="#profile" class="nav-link active" data-tab="profile">👤 Telangana Voter Profile</a>
+        <a href="#voting-list" class="nav-link" data-tab="voting-list">🗳️ TG CM Voting List</a>
         <a href="#about" class="nav-link" data-tab="about">ℹ️ About</a>
-        <a href="#contact" class="nav-link" data-tab="contact">📞 Contact Us</a>
+        <a href="#contact" class="nav-link" data-tab="contact">📞 Helpline</a>
     </nav>
 
     <!-- Content Sections -->
     <div class="container dashboard-container">
         <!-- 1. Profile Tab -->
         <div id="profile" class="tab-content active">
-            <h2>Voter Profile</h2>
+            <h2>Telangana Voter Profile</h2>
             <div class="profile-card">
                 <div class="profile-header">
-                    <div class="profile-avatar">👤</div>
+                    {% if user.face_image %}
+                        <img src="{{ user.face_image }}" class="profile-avatar-img" alt="Voter Face">
+                    {% else %}
+                        <div class="profile-avatar">👤</div>
+                    {% endif %}
                     <div class="profile-title-block">
                         <h3>{{ user.phone_number }}</h3>
                         <span class="badge role-badge">{{ user.role|upper }}</span>
@@ -28,12 +32,16 @@
                         <span class="badge success-badge">Verified Voter ✅</span>
                     </div>
                     <div class="detail-row">
+                        <span class="detail-label">Aadhaar Number</span>
+                        <span class="detail-value font-mono">{{ user.aadhaar_number }}</span>
+                    </div>
+                    <div class="detail-row">
                         <span class="detail-label">Elections Participated</span>
                         <span class="detail-value">{{ voted_count }}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Region Code</span>
-                        <span class="detail-value">Global (Default)</span>
+                        <span class="detail-label">Region/State</span>
+                        <span class="detail-value">Telangana (Hyderabad)</span>
                     </div>
                 </div>
             </div>
@@ -41,7 +49,7 @@
 
         <!-- 2. Voting List Tab -->
         <div id="voting-list" class="tab-content">
-            <h2>Active Elections</h2>
+            <h2>Active Telangana CM Elections</h2>
             {% if elections %}
                 {% for election in elections %}
                 <div class="card election-card">
@@ -59,12 +67,12 @@
                         <form method="POST" action="{% url 'cast_vote' election.id %}" class="vote-form">
                             {% csrf_token %}
                             <div class="candidates-group">
-                                <label class="group-label">Choose your candidate:</label>
+                                <label class="group-label">Choose your Candidate (TG):</label>
                                 {% for cand in election.candidates.all %}
                                     <label class="candidate-option">
                                         <input type="radio" name="candidate" value="{{ cand.id }}" required>
                                         <div class="option-content">
-                                            <span class="candidate-name">{{ cand.name }}</span>
+                                            <span class="candidate-name">{{ cand.party_symbol }} {{ cand.name }}</span>
                                             <span class="candidate-party">{{ cand.party_affinity }}</span>
                                         </div>
                                     </label>
@@ -76,19 +84,19 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p class="no-data">No active elections available at this time.</p>
+                <p class="no-data">No active elections available for Telangana at this time.</p>
             {% endif %}
         </div>
 
         <!-- 3. About Tab -->
         <div id="about" class="tab-content">
-            <h2>About Secure Voting</h2>
+            <h2>About Secure Voting (Telangana)</h2>
             <div class="about-content">
-                <p>Welcome to the <strong>Secure Online Voting System</strong>, a modern platform designed to facilitate secure, transparent, and accessible democratic processes.</p>
+                <p>Welcome to the <strong>Telangana State CM Online Voting Portal</strong>, a specialized state platform designed to facilitate secure, transparent, and accessible democratic choices.</p>
                 
                 <h3>Key Security Pillars:</h3>
                 <ul>
-                    <li><strong>One-Person, One-Vote</strong>: Enforced through encrypted cellular OTP verification linked directly to voter registration database profiles.</li>
+                    <li><strong>One-Person, One-Vote</strong>: Enforced through encrypted cellular OTP verification linked directly to registered profile records.</li>
                     <li><strong>Anonymity Guaranteed</strong>: Votes are structurally decoupled from voter identity records to ensure absolute choice privacy.</li>
                     <li><strong>Immutable Audits</strong>: Real-time candidate tallies are securely calculated for audit dashboards.</li>
                 </ul>
@@ -99,28 +107,28 @@
 
         <!-- 4. Contact Tab -->
         <div id="contact" class="tab-content">
-            <h2>Contact Helpline</h2>
+            <h2>Contact TG Helpline</h2>
             <div class="contact-card">
-                <p class="contact-intro">If you encounter issues during verification, or have questions about eligibility, please reach out to the election support team:</p>
+                <p class="contact-intro">If you encounter issues during verification, or have questions about eligibility, please reach out to the Telangana state election support team:</p>
                 <div class="contact-details">
                     <div class="contact-item">
                         <span class="contact-icon">📞</span>
                         <div class="contact-info">
-                            <label>Phone Support</label>
-                            <a href="tel:9876543210" class="contact-link">9876543210</a>
+                            <label>Telangana Phone Support</label>
+                            <a href="tel:18004255678" class="contact-link">1800-425-5678</a>
                         </div>
                     </div>
                     <div class="contact-item">
                         <span class="contact-icon">📧</span>
                         <div class="contact-info">
-                            <label>Email Support</label>
-                            <a href="mailto:votingsystem@official.com" class="contact-link">votingsystem@official.com</a>
+                            <label>Telangana Email Support</label>
+                            <a href="mailto:tgelection@telangana.gov.in" class="contact-link">tgelection@telangana.gov.in</a>
                         </div>
                     </div>
                     <div class="contact-item">
                         <span class="contact-icon">🕒</span>
                         <div class="contact-info">
-                            <label>Helpline Hours</label>
+                            <label>TG Help Hours</label>
                             <span>24/7 during active election cycles</span>
                         </div>
                     </div>

@@ -1,16 +1,171 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-    <h2>Admin Audit Dashboard</h2>
-    {% for election in elections %}
-    <div class="card">
-        <h3>{{ election.title }}</h3>
-        <ul>
-            {% for cand in election.candidates.all %}
-                <li><strong>{{ cand.name }}</strong>: {{ cand.votes_count }} votes</li>
-            {% endfor %}
-        </ul>
+<div class="dashboard-wrapper">
+    <div class="container admin-container">
+        <h2>🗳️ Admin Audit & Statistics Portal</h2>
+
+        <!-- Section 1: Live Election Statistics -->
+        <section class="admin-section">
+            <h3 class="section-title">📊 Live Election Tally & Predictions</h3>
+            {% if elections_data %}
+                {% for item in elections_data %}
+                <div class="card stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title-group">
+                            <h4>{{ item.election.title }}</h4>
+                            {% if item.election.is_active %}
+                                <span class="badge success-badge">Active</span>
+                            {% else %}
+                                <span class="badge danger-badge">Closed</span>
+                            {% endif %}
+                        </div>
+                        <div class="stat-action-group">
+                            <form method="POST" action="{% url 'toggle_election' item.election.id %}" class="toggle-status-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm {% if item.election.is_active %}btn-danger-outline{% else %}btn-success-outline{% endif %}">
+                                    {% if item.election.is_active %}Close Election{% else %}Open Election{% endif %}
+                                </button>
+                            </form>
+                            <span class="badge total-badge">Total Votes: {{ item.total_votes }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Prediction / Majority Box -->
+                    <div class="prediction-box">
+                        <div class="predict-item">
+                            <span class="predict-label">Majority Status:</span>
+                            <span class="predict-val font-semibold">{{ item.majority_status }}</span>
+                        </div>
+                        <div class="predict-item">
+                            <span class="predict-label">Winning Projections:</span>
+                            <span class="predict-val highlight-val">{{ item.win_chances }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Candidates Live Progress bars -->
+                    <div class="candidates-progress-list">
+                        {% for cand in item.candidates %}
+                        <div class="candidate-progress-item">
+                            <div class="progress-details">
+                                <span class="cand-details-text">
+                                    <strong>{{ cand.symbol }} {{ cand.name }}</strong> ({{ cand.party }})
+                                </span>
+                                <span class="cand-votes-text">
+                                    <strong>{{ cand.votes }}</strong> votes ({{ cand.percent }}%)
+                                    <!-- Remove Candidate Action -->
+                                    <form method="POST" action="{% url 'remove_candidate' cand.id %}" class="remove-cand-form" onsubmit="return confirm('Are you sure you want to remove this candidate?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-remove-cand" title="Remove Candidate">❌</button>
+                                    </form>
+                                </span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: {{ cand.percent }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-data">No active elections available in database.</p>
+            {% endif %}
+        </section>
+
+        <!-- Section 2: Manage Candidates (Add Candidate) -->
+        <section class="admin-section">
+            <h3 class="section-title">👤 Add Candidate / Leader</h3>
+            <div class="card add-candidate-card">
+                <form method="POST" action="{% url 'add_candidate' %}" class="admin-add-form">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group form-group-third">
+                            <label>Select Election</label>
+                            <select name="election_id" required>
+                                <option value="" disabled selected>Select active portal...</option>
+                                {% for elect in elections %}
+                                    <option value="{{ elect.id }}">{{ elect.title }} ({% if elect.state == 'ap' %}AP{% elif elect.state == 'tg' %}TG{% else %}Chennai{% endif %})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group form-group-third">
+                            <label>Candidate Name</label>
+                            <input type="text" name="name" required placeholder="Name of candidate">
+                        </div>
+                        <div class="form-group form-group-sixth">
+                            <label>Party Affinity</label>
+                            <input type="text" name="party_affinity" required placeholder="Party name">
+                        </div>
+                        <div class="form-group form-group-sixth">
+                            <label>Party Symbol (Emoji)</label>
+                            <input type="text" name="party_symbol" placeholder="🦁, ⚖️, 🐘, 🚗..." value="🗳️">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-admin-add">Add Candidate</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Section 3: Detailed Voter Audit Log -->
+        <section class="admin-section">
+            <h3 class="section-title">📋 Voter Audit Log (Voter-to-Candidate Trail)</h3>
+            <div class="table-wrapper">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Face Profile</th>
+                            <th>Voter ID</th>
+                            <th>Mobile Number</th>
+                            <th>Aadhaar Number</th>
+                            <th>State</th>
+                            <th>Election Portal</th>
+                            <th>Chosen Candidate</th>
+                            <th>Affiliated Party</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if audit_votes %}
+                            {% for vote in audit_votes %}
+                            <tr>
+                                <td>
+                                    {% if vote.voter.face_image %}
+                                        <img src="{{ vote.voter.face_image }}" class="voter-face-thumbnail rounded-circle" alt="Face"
+                                             style="border: 1.5px solid var(--primary);" title="Face registered ✅">
+                                    {% else %}
+                                        <div class="voter-face-placeholder rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border: 1.5px dashed var(--border); font-size: 0.8rem; color: var(--text-muted);">👤</div>
+                                    {% endif %}
+                                </td>
+                                <td class="font-mono font-semibold">{{ vote.voter.id }}</td>
+                                <td class="font-mono font-semibold">{{ vote.voter.phone_number }}</td>
+                                <td class="font-mono">{% if vote.voter.aadhaar_number %}{{ vote.voter.aadhaar_number }}{% else %}-{% endif %}</td>
+                                <td>{% if vote.voter.state == 'ap' %}🟢 AP{% elif vote.voter.state == 'tg' %}🔴 TG{% else %}🔵 Chennai{% endif %}</td>
+                                <td>{{ vote.election.title }}</td>
+                                <td><strong>{{ vote.candidate.party_symbol }} {{ vote.candidate.name }}</strong></td>
+                                <td>
+                                    <span class="badge party-badge">{{ vote.candidate.party_affinity }}</span>
+                                </td>
+                                <td>
+                                    {% if vote.voter.face_image %}
+                                    <form method="POST" action="{% url 'reset_voter_face' vote.voter.id %}" style="display:inline;" onsubmit="return confirm('Reset face biometric for {{ vote.voter.phone_number }}? They will be able to login again.');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-remove-cand" title="Reset Face Biometric" style="font-size:1rem; opacity:0.7;" >🔄</button>
+                                    </form>
+                                    {% else %}
+                                    <span style="color:var(--text-muted);font-size:0.8rem;">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center no-data">No votes cast yet. The audit database is empty.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
-    {% endfor %}
 </div>
 {% endblock %}

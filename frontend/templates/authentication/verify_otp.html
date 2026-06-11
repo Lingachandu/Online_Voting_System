@@ -2,14 +2,25 @@
 {% block content %}
 <div class="container">
     <h2>Verify OTP</h2>
-    {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+    {% if error %}<p class="error-text">❌ {{ error }}</p>{% endif %}
+    
+    {% if demo_otp %}
+    <div class="demo-otp-banner">
+        <div class="banner-header">
+            <span class="sms-icon">💬</span>
+            <span class="sms-title">Demo SMS Notification</span>
+        </div>
+        <p class="sms-text">Your Secure Online Voting verification OTP code is: <strong class="otp-highlight">{{ demo_otp }}</strong></p>
+    </div>
+    {% endif %}
+
     <form method="POST">
         {% csrf_token %}
         <div class="form-group">
-            <label>Enter Code (Check your server command terminal output)</label>
-            <input type="text" name="otp" required>
+            <label>Enter Code</label>
+            <input type="text" name="otp" required placeholder="Enter 6-digit OTP">
         </div>
-        <button type="submit" class="btn">Verify</button>
+        <button type="submit" class="btn">Verify OTP</button>
     </form>
 </div>
 {% endblock %}
