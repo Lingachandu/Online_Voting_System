@@ -1,127 +1,174 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'voting/voting.css' %}">
+{% endblock %}
 {% block content %}
-<div class="dashboard-wrapper">
-    <!-- Navigation Bar -->
-    <nav class="dashboard-nav">
-        <a href="#profile" class="nav-link active" data-tab="profile">👤 My Profile</a>
-        <a href="#voting-list" class="nav-link" data-tab="voting-list">🗳️ Voting List</a>
-        <a href="#about" class="nav-link" data-tab="about">ℹ️ About</a>
-        <a href="#contact" class="nav-link" data-tab="contact">📞 Contact Us</a>
-    </nav>
+<div class="container-fluid py-4 theme-{{ state_code }}" style="max-width: 1100px;">
+    <!-- Navigation Bar using Bootstrap Pills -->
+    <ul class="nav nav-pills justify-content-center bg-white shadow-sm rounded-3 p-2 mb-4">
+        <li class="nav-item">
+            <a href="#profile" class="nav-link active" data-bs-toggle="pill" data-tab="profile">👤 {{ state_name }} Voter Profile</a>
+        </li>
+        <li class="nav-item">
+            <a href="#voting-list" class="nav-link" data-bs-toggle="pill" data-tab="voting-list">🗳️ {{ state_name }} CM Voting List</a>
+        </li>
+        <li class="nav-item">
+            <a href="#about" class="nav-link" data-bs-toggle="pill" data-tab="about">ℹ️ About</a>
+        </li>
+        <li class="nav-item">
+            <a href="#contact" class="nav-link" data-bs-toggle="pill" data-tab="contact">📞 Helpline</a>
+        </li>
+    </ul>
 
-    <!-- Content Sections -->
-    <div class="container dashboard-container">
+    <!-- National Integrity Warning Banner -->
+    <div class="national-warning-banner p-3 mb-4 d-flex align-items-center gap-3">
+        <div class="fs-1 text-warning select-none">⚠️</div>
+        <div>
+            <h4 class="h6 fw-bold text-dark mb-1">National Integrity Alert: One Person, One Vote</h4>
+            <p class="text-muted small mb-0">Do not attempt to vote multiple times. Voting more than once is a severe offense that undermines our democratic process. If you do this, you are spoiling our nation's future.</p>
+        </div>
+    </div>
+
+    <!-- Content Sections (Tab Panes) -->
+    <div class="tab-content">
         <!-- 1. Profile Tab -->
-        <div id="profile" class="tab-content active">
-            <h2>Voter Profile</h2>
-            <div class="profile-card">
-                <div class="profile-header">
-                    <div class="profile-avatar">👤</div>
-                    <div class="profile-title-block">
-                        <h3>{{ user.phone_number }}</h3>
-                        <span class="badge role-badge">{{ user.role|upper }}</span>
+        <div id="profile" class="tab-pane fade show active">
+            <h2 class="h4 mb-3 fw-bold text-dark">{{ state_name }} Voter Profile</h2>
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+                <div class="card-body p-4 bg-light border-bottom d-flex align-items-center gap-3">
+                    {% if user.face_image %}
+                        <img src="{{ user.face_image }}" class="rounded-circle border border-3 avatar-size" style="border-color: var(--primary) !important;" alt="Voter Face">
+                    {% else %}
+                        <div class="rounded-circle bg-white d-flex align-items-center justify-content-center border border-3 fs-2 text-secondary avatar-size" style="border-color: var(--primary) !important;">👤</div>
+                    {% endif %}
+                    <div>
+                        <h3 class="h5 mb-1 fw-bold text-dark">{{ user.phone_number }}</h3>
+                        <span class="badge bg-secondary">{{ user.role|upper }}</span>
                     </div>
                 </div>
-                <div class="profile-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Status</span>
-                        <span class="badge success-badge">Verified Voter ✅</span>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted fw-semibold">Status</span>
+                        <span class="badge bg-success">Verified Voter ✅</span>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Elections Participated</span>
-                        <span class="detail-value">{{ voted_count }}</span>
+                    {% if user.aadhaar_number %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted fw-semibold">Aadhaar Number</span>
+                        <span class="font-mono fw-bold text-dark">{{ user.aadhaar_number }}</span>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Region Code</span>
-                        <span class="detail-value">Global (Default)</span>
+                    {% endif %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted fw-semibold">Elections Participated</span>
+                        <span class="fw-bold text-dark">{{ voted_count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span class="text-muted fw-semibold">Region/State</span>
+                        <span class="fw-bold text-dark">{{ state_name }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- 2. Voting List Tab -->
-        <div id="voting-list" class="tab-content">
-            <h2>Active Elections</h2>
+        <div id="voting-list" class="tab-pane fade">
+            <h2 class="h4 mb-3 fw-bold text-dark">Active {{ state_name }} CM Elections</h2>
             {% if elections %}
                 {% for election in elections %}
-                <div class="card election-card">
-                    <div class="election-header">
-                        <h3>{{ election.title }}</h3>
-                        <p class="election-desc">{{ election.description }}</p>
+                <div class="card shadow-sm border-0 rounded-3 mb-4">
+                    <div class="card-body p-4 border-bottom">
+                        <h3 class="h5 fw-bold text-dark mb-1">{{ election.title }}</h3>
+                        <p class="text-muted small mb-0">{{ election.description }}</p>
                     </div>
                     
-                    {% if election.id in voted_elections %}
-                        <div class="vote-success-banner">
-                            <span class="check-icon">✓</span>
-                            <span class="success-message">Vote Casted Successfully</span>
-                        </div>
-                    {% else %}
-                        <form method="POST" action="{% url 'cast_vote' election.id %}" class="vote-form">
-                            {% csrf_token %}
-                            <div class="candidates-group">
-                                <label class="group-label">Choose your candidate:</label>
-                                {% for cand in election.candidates.all %}
-                                    <label class="candidate-option">
-                                        <input type="radio" name="candidate" value="{{ cand.id }}" required>
-                                        <div class="option-content">
-                                            <span class="candidate-name">{{ cand.name }}</span>
-                                            <span class="candidate-party">{{ cand.party_affinity }}</span>
-                                        </div>
-                                    </label>
-                                {% endfor %}
+                    <div class="card-body p-4">
+                        {% if election.id in voted_elections %}
+                            <div class="alert alert-success d-flex align-items-center justify-content-between flex-wrap gap-2 m-0" role="alert">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>✓</span>
+                                    <strong class="success-message">Vote Casted Successfully</strong>
+                                </div>
+                                <a href="{% url 'download_receipt' election.id %}" class="btn btn-success btn-sm py-1 px-3 d-flex align-items-center gap-1" style="font-weight: 600;">
+                                    📥 Download Receipt
+                                </a>
                             </div>
-                            <button type="submit" class="btn btn-vote">Submit Vote</button>
-                        </form>
-                    {% endif %}
+                        {% else %}
+                            <form method="POST" action="{% url 'cast_vote' election.id %}">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-dark mb-3">Choose your Candidate ({{ state_name }}):</label>
+                                    <div class="row g-3">
+                                        {% for cand in election.candidates.all %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <label class="card h-100 candidate-card p-3 cursor-pointer d-flex flex-column align-items-center text-center justify-content-between position-relative" style="--candidate-color: {{ cand.party_color }};">
+                                                    <div class="w-100 d-flex justify-content-start">
+                                                        <input type="radio" name="candidate" value="{{ cand.id }}" data-party="{{ cand.party_affinity }}" data-color="{{ cand.party_color }}" class="form-check-input flex-shrink-0" required>
+                                                    </div>
+                                                    <div class="my-3">
+                                                        {% if cand.photo_url %}
+                                                            <img src="{{ cand.photo_url }}" class="rounded-circle border border-3 mb-2" style="width: 100px; height: 100px; object-fit: cover; border-color: var(--candidate-color, var(--primary, #4f46e5)) !important;" alt="{{ cand.name }}">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-3 mb-2 fs-1 text-secondary" style="width: 100px; height: 100px; border-color: var(--candidate-color, var(--primary, #4f46e5)) !important;">👤</div>
+                                                        {% endif %}
+                                                        <h4 class="h6 fw-bold text-dark mb-1">{% if cand.party_symbol %}{{ cand.party_symbol }} {% endif %}{{ cand.name }}</h4>
+                                                        <span class="text-muted small fw-semibold d-block mt-1">{{ cand.party_affinity }}</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary-custom px-4 py-2 mt-2">Submit Vote</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
-                <p class="no-data">No active elections available at this time.</p>
+                <p class="text-center text-muted py-5">No active elections available for {{ state_name }} at this time.</p>
             {% endif %}
         </div>
 
         <!-- 3. About Tab -->
-        <div id="about" class="tab-content">
-            <h2>About Secure Voting</h2>
-            <div class="about-content">
-                <p>Welcome to the <strong>Secure Online Voting System</strong>, a modern platform designed to facilitate secure, transparent, and accessible democratic processes.</p>
-                
-                <h3>Key Security Pillars:</h3>
-                <ul>
-                    <li><strong>One-Person, One-Vote</strong>: Enforced through encrypted cellular OTP verification linked directly to voter registration database profiles.</li>
-                    <li><strong>Anonymity Guaranteed</strong>: Votes are structurally decoupled from voter identity records to ensure absolute choice privacy.</li>
-                    <li><strong>Immutable Audits</strong>: Real-time candidate tallies are securely calculated for audit dashboards.</li>
+        <div id="about" class="tab-pane fade">
+            <h2 class="h4 mb-3 fw-bold text-dark">About Secure Voting ({{ state_name }})</h2>
+            <div class="card shadow-sm border-0 rounded-3 p-4">
+                <p class="text-muted">Welcome to the <strong>{{ state_name }} Secure Online Voting Portal</strong>, a specialized state platform designed to facilitate secure, transparent, and accessible democratic choices.</p>
+                <h3 class="h6 fw-bold text-dark mt-3 mb-2">Key Security Pillars:</h3>
+                <ul class="text-muted">
+                    <li class="mb-2"><strong>Aadhaar-Linked Validation</strong>: Voter profiles are strictly matched with registered 12-digit Aadhaar credentials on this portal.</li>
+                    <li class="mb-2"><strong>One-Person, One-Vote</strong>: Enforced through encrypted cellular OTP verification linked directly to registered profile records.</li>
+                    <li class="mb-2"><strong>Anonymity Guaranteed</strong>: Votes are structurally decoupled from voter identity records to ensure absolute choice privacy.</li>
                 </ul>
-                
-                <p>Ensure that you keep your registered mobile device safe and never share OTP codes with third parties.</p>
+                <p class="text-muted mb-0">Ensure that you keep your registered mobile device safe and never share OTP codes with third parties.</p>
             </div>
         </div>
 
-        <!-- 4. Contact Tab -->
-        <div id="contact" class="tab-content">
-            <h2>Contact Helpline</h2>
-            <div class="contact-card">
-                <p class="contact-intro">If you encounter issues during verification, or have questions about eligibility, please reach out to the election support team:</p>
-                <div class="contact-details">
-                    <div class="contact-item">
-                        <span class="contact-icon">📞</span>
-                        <div class="contact-info">
-                            <label>Phone Support</label>
-                            <a href="tel:9876543210" class="contact-link">9876543210</a>
+        <!-- 4. Helpline Tab -->
+        <div id="contact" class="tab-pane fade">
+            <h2 class="h4 mb-3 fw-bold text-dark">Contact {{ state_name }} Helpline</h2>
+            <div class="card shadow-sm border-0 rounded-3 p-4">
+                <p class="text-muted">If you encounter issues during verification, or have questions about eligibility, please reach out to the {{ state_name }} state election support team:</p>
+                <div class="list-group list-group-flush mt-3">
+                    <div class="list-group-item d-flex align-items-center gap-3 py-3 border-0 bg-transparent">
+                        <span class="fs-4">📞</span>
+                        <div>
+                            <label class="d-block text-muted small fw-bold text-uppercase">{{ state_name }} Phone Support</label>
+                            <a href="tel:{{ helpline_phone }}" class="text-decoration-none fw-bold" style="color: var(--primary, #4f46e5);">{{ helpline_phone }}</a>
                         </div>
                     </div>
-                    <div class="contact-item">
-                        <span class="contact-icon">📧</span>
-                        <div class="contact-info">
-                            <label>Email Support</label>
-                            <a href="mailto:votingsystem@official.com" class="contact-link">votingsystem@official.com</a>
+                    <div class="list-group-item d-flex align-items-center gap-3 py-3 border-0 bg-transparent">
+                        <span class="fs-4">📧</span>
+                        <div>
+                            <label class="d-block text-muted small fw-bold text-uppercase">{{ state_name }} Email Support</label>
+                            <a href="mailto:{{ helpline_email }}" class="text-decoration-none fw-bold" style="color: var(--primary, #4f46e5);">{{ helpline_email }}</a>
                         </div>
                     </div>
-                    <div class="contact-item">
-                        <span class="contact-icon">🕒</span>
-                        <div class="contact-info">
-                            <label>Helpline Hours</label>
-                            <span>24/7 during active election cycles</span>
+                    <div class="list-group-item d-flex align-items-center gap-3 py-3 border-0 bg-transparent">
+                        <span class="fs-4">🕒</span>
+                        <div>
+                            <label class="d-block text-muted small fw-bold text-uppercase">{{ state_name }} Help Hours</label>
+                            <span class="fw-bold text-dark">24/7 during active election cycles</span>
                         </div>
                     </div>
                 </div>
@@ -130,38 +177,42 @@
     </div>
 </div>
 
-<!-- Simple tab-switching client logic -->
+<!-- Tab-switching & Dynamic Submit Button Coloring -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const links = document.querySelectorAll(".nav-link");
-        const tabs = document.querySelectorAll(".tab-content");
+        // Listen to changes on candidate radio options to dynamically style the submit button
+        const candidateRadios = document.querySelectorAll('input[name="candidate"]');
+        candidateRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const color = this.getAttribute('data-color') || 'var(--primary)';
+                
+                // Find submit button in the closest form
+                const submitBtn = this.closest('form').querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.style.setProperty('background-color', color, 'important');
+                    submitBtn.style.setProperty('border-color', color, 'important');
+                    submitBtn.style.setProperty('color', '#ffffff', 'important');
+                    submitBtn.style.setProperty('box-shadow', `0 4px 12px ${color}40`, 'important');
+                }
+            });
+        });
 
-        // Handle page hash matching tab if present
-        const hash = window.location.hash.substring(1);
+        // Simple hash navigation support
+        const hash = window.location.hash;
         if (hash) {
-            const targetLink = document.querySelector(`.nav-link[data-tab="${hash}"]`);
-            const targetTab = document.getElementById(hash);
-            if (targetLink && targetTab) {
-                links.forEach(l => l.classList.remove("active"));
-                tabs.forEach(t => t.classList.remove("active"));
-                targetLink.classList.add("active");
-                targetTab.classList.add("active");
+            const triggerEl = document.querySelector(`.nav-link[href="${hash}"]`);
+            if (triggerEl) {
+                const tab = new bootstrap.Tab(triggerEl);
+                tab.show();
             }
         }
-
-        links.forEach(link => {
-            link.addEventListener("click", function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute("data-tab");
-
-                links.forEach(l => l.classList.remove("active"));
-                tabs.forEach(t => t.classList.remove("active"));
-
-                this.classList.add("active");
-                document.getElementById(targetId).classList.add("active");
-                
-                // Update URL hash without reload
-                history.pushState(null, null, "#" + targetId);
+        
+        // Update URL hash on tab show
+        const triggerTabList = document.querySelectorAll('.nav-link[data-bs-toggle="pill"]');
+        triggerTabList.forEach(triggerEl => {
+            triggerEl.addEventListener('shown.bs.tab', event => {
+                const hashVal = event.target.getAttribute('href');
+                history.pushState(null, null, hashVal);
             });
         });
     });

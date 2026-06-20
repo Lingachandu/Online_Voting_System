@@ -36,12 +36,13 @@ class CustomUser(AbstractUser):
     )
     
     username = None  # Remove default username field
-    phone_number = models.CharField(max_length=15, unique=True)
+    phone_number = models.CharField(max_length=10, unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='voter')
     state = models.CharField(max_length=10, choices=STATE_CHOICES, blank=True, null=True)
     aadhaar_number = models.CharField(max_length=12, blank=True, null=True)
     face_image = models.TextField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
+    has_logged_in = models.BooleanField(default=False)
 
     objects = CustomUserManager()  # Hook the custom manager here
 

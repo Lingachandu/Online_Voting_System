@@ -1,0 +1,290 @@
+python.exe : Creating test database for alias 'default'...
+At line:1 char:1
++ & "C:\Users\Chandu Linga\AppData\Local\Programs\Python\Python313\pyth ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Creating test d...as 'default'...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Found 19 test(s).
+System check identified no issues (0 silenced).
+
+--- Text SMS OUTBOX: OTP FOR 8888888888 IS 775397 ---
+
+
+--- Text SMS OUTBOX: OTP FOR 8888888888 IS 757044 ---
+
+
+--- Text SMS OUTBOX: OTP FOR 8888888888 IS 530718 ---
+
+
+--- Text SMS OUTBOX: OTP FOR 8888888888 IS 753245 ---
+
+.....FF............
+======================================================================
+FAIL: test_login_admin_wrong_number_returns_error 
+(apps.authentication.tests.AuthenticationViewTests.test_login_admin_wrong_number_returns_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Chandu Linga\OneDrive\Desktop\Online_Voting\backend\apps\authentication\tests.py", line 69, in 
+test_login_admin_wrong_number_returns_error
+    self.assertContains(response, 'You are not admin')
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : Couldn't find 'You are not admin' in the following response
+b'\n<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" 
+content="width=device-width, initial-scale=1.0">\n    <title>\xf0\x9f\x97\xb3\xef\xb8\x8f Secure Online Voting 
+System</title>\n    <link rel="preconnect" href="https://fonts.googleapis.com">\n    <link rel="preconnect" 
+href="https://fonts.gstatic.com" crossorigin>\n    <link 
+href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">\n    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
+integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">\n    
+<link rel="stylesheet" href="/static/css/base.css">\n    \n<link rel="stylesheet" 
+href="/static/css/auth.css">\n\n</head>\n<body>\n    <header class="main-header">\n        <div 
+class="header-brand">\n            <span class="logo-icon">\xf0\x9f\x97\xb3\xef\xb8\x8f</span>\n            <h1>Secure 
+Online Voting</h1>\n        </div>\n        \n    </header>\n    \n    <main class="main-content">\n        \n<div 
+class="row justify-content-center w-100 px-3">\n    <div class="col-md-6 col-lg-5">\n        <div class="card border-0 
+shadow-lg p-4 p-md-5" style="border-radius: var(--radius); background: var(--card-bg);">\n            <div 
+class="text-center mb-4">\n                <span class="fs-1">\xf0\x9f\x97\xb3\xef\xb8\x8f</span>\n                <h2 
+class="fw-bold mt-2 text-dark">Secure Login Portal</h2>\n                <p class="text-muted small">Please verify 
+your credentials to access the voting portal.</p>\n            </div>\n\n            \n                <div 
+class="alert alert-danger d-flex align-items-center" role="alert" style="border-radius: var(--radius);">\n             
+       <span class="me-2">\xe2\x9d\x8c</span>\n                    <div>You are not authorized as an 
+administrator.</div>\n                </div>\n            \n\n            <form id="login-form" method="POST">\n       
+         <input type="hidden" name="csrfmiddlewaretoken" 
+value="zuz488VAUwIYJfCfsKdATijSuk0ruQD6QSwRpNlerBW5sZTTwFLqpmZFZczi6UvO">\n                <input type="hidden" 
+name="face_image" id="face_image_input">\n\n                <div class="mb-4" id="role-group">\n                    
+<label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Select 
+Role</label>\n                    <select name="role" id="role-select" class="form-select form-select-lg" 
+style="border-radius: var(--radius);">\n                        <option value="voter">Voter</option>\n                 
+       <option value="admin">Admin</option>\n                    </select>\n                </div>\n\n                
+<div class="mb-4">\n                    <label class="form-label fw-bold text-secondary text-uppercase small" 
+style="letter-spacing: 0.5px;">Mobile Number</label>\n                    <input type="tel" name="phone_number" 
+required class="form-control form-control-lg" placeholder="+123456789" style="border-radius: var(--radius);">\n        
+        </div>\n\n                <div class="form-check mb-4">\n                    <input type="checkbox" 
+class="form-check-input" id="agree_terms" name="agree_terms" required style="cursor: pointer;">\n                    
+<label class="form-check-label small text-muted ms-2" for="agree_terms" style="cursor: pointer;">\n                    
+    I agree to the <a href="/terms/" target="_blank" class="text-decoration-none fw-bold text-primary">Terms & 
+Conditions</a> & <a href="/privacy/" target="_blank" class="text-decoration-none fw-bold text-primary">Privacy 
+Policy</a>\n                    </label>\n                </div>\n\n                <button type="submit" 
+id="submit-btn" class="btn btn-primary btn-lg w-100 py-3 text-uppercase fw-bold shadow-sm" style="border-radius: 
+var(--radius); background: var(--primary); border: none;">Generate OTP</button>\n            \n                <div 
+class="text-center mt-4">\n                    <span class="text-muted small">Don\'t have an account? <a 
+href="/register/" class="text-decoration-none fw-bold text-primary">Register here</a></span>\n                </div>\n 
+           </form>\n        </div>\n    </div>\n</div>\n\n<!-- Face Capture/Scanner Bootstrap Modal -->\n<div 
+class="modal fade" id="faceAuthModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" 
+aria-labelledby="faceAuthModalLabel" aria-hidden="true">\n    <div class="modal-dialog modal-dialog-centered">\n       
+ <div class="modal-content text-center border-0 shadow-lg" style="border-radius: var(--radius);">\n            <div 
+class="modal-header border-0 pb-0">\n                <h5 class="modal-title w-100 fw-bold text-dark" 
+id="faceAuthModalLabel">\xf0\x9f\x94\x92 Biometric Face Authentication</h5>\n            </div>\n            <div 
+class="modal-body p-4">\n                <p class="text-muted small mb-4">Align your face within the scanner ring. Do 
+not close this browser window.</p>\n                \n                <!-- Circular Scanner Window -->\n               
+ <div class="scanner-container mx-auto position-relative mb-4" style="width: 240px; height: 240px; border-radius: 50%; 
+overflow: hidden; background: #000; border: 4px solid var(--primary);">\n                    <video 
+id="webcam-preview" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>\n        
+            <canvas id="capture-canvas" style="display: none;" width="320" height="240"></canvas>\n                    
+<div class="scanner-laser"></div>\n                    <div class="scanner-guide"></div>\n                </div>\n\n   
+             <!-- Progress Bar -->\n                <div class="progress mb-3" style="height: 8px; border-radius: 4px; 
+background-color: #f1f5f9;">\n                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+id="scan-progress-bar" role="progressbar" style="width: 0%; background-color: var(--primary);" aria-valuenow="0" 
+aria-valuemin="0" aria-valuemax="100"></div>\n                </div>\n\n                <!-- Status text -->\n         
+       <div id="scan-status" class="fw-bold text-primary mb-2 small">Initializing camera stream...</div>\n            
+</div>\n        </div>\n    </div>\n</div>\n\n<script>\n    document.addEventListener("DOMContentLoaded", function() 
+{\n        const roleSelect = document.getElementById("role-select");\n        const loginForm = 
+document.getElementById("login-form");\n        const faceModal = new 
+bootstrap.Modal(document.getElementById(\'faceAuthModal\'));\n\n        // Form Submission interceptor for Voter Face 
+Scanning\n        loginForm.addEventListener("submit", function(e) {\n            const isVoter = (roleSelect.value 
+=== "voter");\n            if (!isVoter) {\n                // Admin login continues immediately\n                
+return;\n            }\n\n            // Prevent default submit so we can run the webcam flow\n            
+e.preventDefault();\n\n            // Show face modal and open webcam stream\n            faceModal.show();\n          
+  initiateFaceScan();\n        });\n\n        function initiateFaceScan() {\n            let stream = null;\n          
+  const video = document.getElementById(\'webcam-preview\');\n            const canvas = 
+document.getElementById(\'capture-canvas\');\n            const progressBar = 
+document.getElementById(\'scan-progress-bar\');\n            const scanStatus = 
+document.getElementById(\'scan-status\');\n\n            // Attempt camera stream\n            
+navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })\n                .then(s => {\n            
+        stream = s;\n                    video.srcObject = stream;\n                    video.play();\n                
+    startScanning(true);\n                })\n                .catch(err => {\n                    
+console.warn("Webcam access failed/unavailable, using simulation fallback:", err);\n                    
+scanStatus.textContent = "Camera restricted. Running secure simulation...";\n                    
+startScanning(false);\n                });\n\n            function startScanning(useCamera) {\n                let 
+progress = 0;\n                progressBar.style.width = \'0%\';\n                
+progressBar.setAttribute(\'aria-valuenow\', 0);\n                \n                const statusMessages = [\n          
+          "Locating face outline...",\n                    "Analyzing biometric geometry...",\n                    
+"Verifying registration data...",\n                    "Performing secure match...",\n                    "Biometric 
+security handshake complete!"\n                ];\n\n                const interval = setInterval(() => {\n            
+        progress += 5;\n                    if (progress > 100) progress = 100;\n                    \n                
+    progressBar.style.width = progress + \'%\';\n                    progressBar.setAttribute(\'aria-valuenow\', 
+progress);\n                    \n                    const msgIndex = Math.min(Math.floor(progress / 20), 
+statusMessages.length - 1);\n                    scanStatus.textContent = statusMessages[msgIndex];\n\n                
+    if (progress >= 100) {\n                        clearInterval(interval);\n                        
+captureAndSubmit(useCamera);\n                    }\n                }, 100);\n            }\n\n            function 
+captureAndSubmit(useCamera) {\n                const ctx = canvas.getContext(\'2d\');\n                if (useCamera 
+&& video.readyState === video.HAVE_ENOUGH_DATA) {\n                    ctx.drawImage(video, 0, 0, canvas.width, 
+canvas.height);\n                } else {\n                    drawMockFace(canvas);\n                }\n              
+  \n                const dataURL = canvas.toDataURL(\'image/png\');\n                
+document.getElementById(\'face_image_input\').value = dataURL;\n                \n                if (stream) {\n      
+              stream.getTracks().forEach(track => track.stop());\n                }\n                \n                
+setTimeout(() => {\n                    faceModal.hide();\n                    loginForm.submit();\n                }, 
+400);\n            }\n\n            function drawMockFace(canvas) {\n                const ctx = 
+canvas.getContext(\'2d\');\n                ctx.fillStyle = \'#0f172a\';\n                ctx.fillRect(0, 0, 
+canvas.width, canvas.height);\n                \n                ctx.strokeStyle = \'#4f46e5\';\n                
+ctx.lineWidth = 3;\n                ctx.beginPath();\n                ctx.arc(canvas.width / 2, canvas.height / 2 - 
+10, 65, 0, Math.PI * 2);\n                ctx.stroke();\n\n                ctx.fillStyle = \'#10b981\';\n              
+  ctx.beginPath();\n                ctx.arc(canvas.width / 2 - 22, canvas.height / 2 - 25, 6, 0, Math.PI * 2);\n       
+         ctx.arc(canvas.width / 2 + 22, canvas.height / 2 - 25, 6, 0, Math.PI * 2);\n                ctx.fill();\n\n   
+             ctx.strokeStyle = \'#4f46e5\';\n                ctx.lineWidth = 3;\n                ctx.beginPath();\n    
+            ctx.moveTo(canvas.width / 2, canvas.height / 2 - 15);\n                ctx.lineTo(canvas.width / 2 - 5, 
+canvas.height / 2 + 8);\n                ctx.lineTo(canvas.width / 2 + 5, canvas.height / 2 + 8);\n                
+ctx.stroke();\n\n                ctx.strokeStyle = \'#10b981\';\n                ctx.lineWidth = 3.5;\n                
+ctx.beginPath();\n                ctx.arc(canvas.width / 2, canvas.height / 2 + 15, 22, 0.1 * Math.PI, 0.9 * Math.PI, 
+false);\n                ctx.stroke();\n\n                ctx.strokeStyle = \'rgba(79, 70, 229, 0.15)\';\n             
+   ctx.lineWidth = 1;\n                for (let i = 20; i < canvas.width; i += 30) {\n                    
+ctx.beginPath();\n                    ctx.moveTo(i, 0);\n                    ctx.lineTo(i, canvas.height);\n           
+         ctx.stroke();\n                }\n                for (let j = 20; j < canvas.height; j += 30) {\n            
+        ctx.beginPath();\n                    ctx.moveTo(0, j);\n                    ctx.lineTo(canvas.width, j);\n    
+                ctx.stroke();\n                }\n\n                ctx.fillStyle = \'#ffffff\';\n                
+ctx.font = \'bold 10px Outfit, sans-serif\';\n                ctx.textAlign = \'center\';\n                
+ctx.fillText(\'SECURE BIOMETRIC SIGNATURE\', canvas.width / 2, canvas.height - 28);\n                ctx.fillStyle = 
+\'#10b981\';\n                ctx.fillText(\'VERIFICATION OK\', canvas.width / 2, canvas.height - 14);\n            
+}\n        }\n    });\n</script>\n\n    </main>\n    <script 
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+crossorigin="anonymous"></script>\n</body>\n</html>'
+
+======================================================================
+FAIL: test_login_ap_voter_invalid_aadhaar_returns_error 
+(apps.authentication.tests.AuthenticationViewTests.test_login_ap_voter_invalid_aadhaar_returns_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Chandu Linga\OneDrive\Desktop\Online_Voting\backend\apps\authentication\tests.py", line 94, in 
+test_login_ap_voter_invalid_aadhaar_returns_error
+    self.assertContains(response, 'Aadhaar number must be exactly 12 numeric digits')
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : Couldn't find 'Aadhaar number must be exactly 12 numeric digits' in the following 
+response
+b'\n<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" 
+content="width=device-width, initial-scale=1.0">\n    <title>\xf0\x9f\x97\xb3\xef\xb8\x8f Secure Online Voting 
+System</title>\n    <link rel="preconnect" href="https://fonts.googleapis.com">\n    <link rel="preconnect" 
+href="https://fonts.gstatic.com" crossorigin>\n    <link 
+href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">\n    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
+integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">\n    
+<link rel="stylesheet" href="/static/css/base.css">\n    \n<link rel="stylesheet" 
+href="/static/css/auth.css">\n\n</head>\n<body>\n    <header class="main-header">\n        <div 
+class="header-brand">\n            <span class="logo-icon">\xf0\x9f\x97\xb3\xef\xb8\x8f</span>\n            <h1>Secure 
+Online Voting</h1>\n        </div>\n        \n    </header>\n    \n    <main class="main-content">\n        \n<div 
+class="row justify-content-center w-100 px-3">\n    <div class="col-md-6 col-lg-5">\n        <div class="card border-0 
+shadow-lg p-4 p-md-5" style="border-radius: var(--radius); background: var(--card-bg);">\n            <div 
+class="text-center mb-4">\n                <span class="fs-1">\xf0\x9f\x97\xb3\xef\xb8\x8f</span>\n                <h2 
+class="fw-bold mt-2 text-dark">Secure Login Portal</h2>\n                <p class="text-muted small">Please verify 
+your credentials to access the voting portal.</p>\n            </div>\n\n            \n                <div 
+class="alert alert-danger d-flex align-items-center" role="alert" style="border-radius: var(--radius);">\n             
+       <span class="me-2">\xe2\x9d\x8c</span>\n                    <div>Face biometric verification is required to log 
+into website.</div>\n                </div>\n            \n\n            <form id="login-form" method="POST">\n        
+        <input type="hidden" name="csrfmiddlewaretoken" 
+value="PDEnZCelPRI4DCRlXQX5xSpvsbh5njpKrd8kL9RgkFx36qT73xvco6FKZDqpWy6b">\n                <input type="hidden" 
+name="face_image" id="face_image_input">\n\n                <div class="mb-4" id="role-group">\n                    
+<label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Select 
+Role</label>\n                    <select name="role" id="role-select" class="form-select form-select-lg" 
+style="border-radius: var(--radius);">\n                        <option value="voter">Voter</option>\n                 
+       <option value="admin">Admin</option>\n                    </select>\n                </div>\n\n                
+<div class="mb-4">\n                    <label class="form-label fw-bold text-secondary text-uppercase small" 
+style="letter-spacing: 0.5px;">Mobile Number</label>\n                    <input type="tel" name="phone_number" 
+required class="form-control form-control-lg" placeholder="+123456789" style="border-radius: var(--radius);">\n        
+        </div>\n\n                <div class="form-check mb-4">\n                    <input type="checkbox" 
+class="form-check-input" id="agree_terms" name="agree_terms" required style="cursor: pointer;">\n                    
+<label class="form-check-label small text-muted ms-2" for="agree_terms" style="cursor: pointer;">\n                    
+    I agree to the <a href="/terms/" target="_blank" class="text-decoration-none fw-bold text-primary">Terms & 
+Conditions</a> & <a href="/privacy/" target="_blank" class="text-decoration-none fw-bold text-primary">Privacy 
+Policy</a>\n                    </label>\n                </div>\n\n                <button type="submit" 
+id="submit-btn" class="btn btn-primary btn-lg w-100 py-3 text-uppercase fw-bold shadow-sm" style="border-radius: 
+var(--radius); background: var(--primary); border: none;">Generate OTP</button>\n            \n                <div 
+class="text-center mt-4">\n                    <span class="text-muted small">Don\'t have an account? <a 
+href="/register/" class="text-decoration-none fw-bold text-primary">Register here</a></span>\n                </div>\n 
+           </form>\n        </div>\n    </div>\n</div>\n\n<!-- Face Capture/Scanner Bootstrap Modal -->\n<div 
+class="modal fade" id="faceAuthModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" 
+aria-labelledby="faceAuthModalLabel" aria-hidden="true">\n    <div class="modal-dialog modal-dialog-centered">\n       
+ <div class="modal-content text-center border-0 shadow-lg" style="border-radius: var(--radius);">\n            <div 
+class="modal-header border-0 pb-0">\n                <h5 class="modal-title w-100 fw-bold text-dark" 
+id="faceAuthModalLabel">\xf0\x9f\x94\x92 Biometric Face Authentication</h5>\n            </div>\n            <div 
+class="modal-body p-4">\n                <p class="text-muted small mb-4">Align your face within the scanner ring. Do 
+not close this browser window.</p>\n                \n                <!-- Circular Scanner Window -->\n               
+ <div class="scanner-container mx-auto position-relative mb-4" style="width: 240px; height: 240px; border-radius: 50%; 
+overflow: hidden; background: #000; border: 4px solid var(--primary);">\n                    <video 
+id="webcam-preview" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>\n        
+            <canvas id="capture-canvas" style="display: none;" width="320" height="240"></canvas>\n                    
+<div class="scanner-laser"></div>\n                    <div class="scanner-guide"></div>\n                </div>\n\n   
+             <!-- Progress Bar -->\n                <div class="progress mb-3" style="height: 8px; border-radius: 4px; 
+background-color: #f1f5f9;">\n                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+id="scan-progress-bar" role="progressbar" style="width: 0%; background-color: var(--primary);" aria-valuenow="0" 
+aria-valuemin="0" aria-valuemax="100"></div>\n                </div>\n\n                <!-- Status text -->\n         
+       <div id="scan-status" class="fw-bold text-primary mb-2 small">Initializing camera stream...</div>\n            
+</div>\n        </div>\n    </div>\n</div>\n\n<script>\n    document.addEventListener("DOMContentLoaded", function() 
+{\n        const roleSelect = document.getElementById("role-select");\n        const loginForm = 
+document.getElementById("login-form");\n        const faceModal = new 
+bootstrap.Modal(document.getElementById(\'faceAuthModal\'));\n\n        // Form Submission interceptor for Voter Face 
+Scanning\n        loginForm.addEventListener("submit", function(e) {\n            const isVoter = (roleSelect.value 
+=== "voter");\n            if (!isVoter) {\n                // Admin login continues immediately\n                
+return;\n            }\n\n            // Prevent default submit so we can run the webcam flow\n            
+e.preventDefault();\n\n            // Show face modal and open webcam stream\n            faceModal.show();\n          
+  initiateFaceScan();\n        });\n\n        function initiateFaceScan() {\n            let stream = null;\n          
+  const video = document.getElementById(\'webcam-preview\');\n            const canvas = 
+document.getElementById(\'capture-canvas\');\n            const progressBar = 
+document.getElementById(\'scan-progress-bar\');\n            const scanStatus = 
+document.getElementById(\'scan-status\');\n\n            // Attempt camera stream\n            
+navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })\n                .then(s => {\n            
+        stream = s;\n                    video.srcObject = stream;\n                    video.play();\n                
+    startScanning(true);\n                })\n                .catch(err => {\n                    
+console.warn("Webcam access failed/unavailable, using simulation fallback:", err);\n                    
+scanStatus.textContent = "Camera restricted. Running secure simulation...";\n                    
+startScanning(false);\n                });\n\n            function startScanning(useCamera) {\n                let 
+progress = 0;\n                progressBar.style.width = \'0%\';\n                
+progressBar.setAttribute(\'aria-valuenow\', 0);\n                \n                const statusMessages = [\n          
+          "Locating face outline...",\n                    "Analyzing biometric geometry...",\n                    
+"Verifying registration data...",\n                    "Performing secure match...",\n                    "Biometric 
+security handshake complete!"\n                ];\n\n                const interval = setInterval(() => {\n            
+        progress += 5;\n                    if (progress > 100) progress = 100;\n                    \n                
+    progressBar.style.width = progress + \'%\';\n                    progressBar.setAttribute(\'aria-valuenow\', 
+progress);\n                    \n                    const msgIndex = Math.min(Math.floor(progress / 20), 
+statusMessages.length - 1);\n                    scanStatus.textContent = statusMessages[msgIndex];\n\n                
+    if (progress >= 100) {\n                        clearInterval(interval);\n                        
+captureAndSubmit(useCamera);\n                    }\n                }, 100);\n            }\n\n            function 
+captureAndSubmit(useCamera) {\n                const ctx = canvas.getContext(\'2d\');\n                if (useCamera 
+&& video.readyState === video.HAVE_ENOUGH_DATA) {\n                    ctx.drawImage(video, 0, 0, canvas.width, 
+canvas.height);\n                } else {\n                    drawMockFace(canvas);\n                }\n              
+  \n                const dataURL = canvas.toDataURL(\'image/png\');\n                
+document.getElementById(\'face_image_input\').value = dataURL;\n                \n                if (stream) {\n      
+              stream.getTracks().forEach(track => track.stop());\n                }\n                \n                
+setTimeout(() => {\n                    faceModal.hide();\n                    loginForm.submit();\n                }, 
+400);\n            }\n\n            function drawMockFace(canvas) {\n                const ctx = 
+canvas.getContext(\'2d\');\n                ctx.fillStyle = \'#0f172a\';\n                ctx.fillRect(0, 0, 
+canvas.width, canvas.height);\n                \n                ctx.strokeStyle = \'#4f46e5\';\n                
+ctx.lineWidth = 3;\n                ctx.beginPath();\n                ctx.arc(canvas.width / 2, canvas.height / 2 - 
+10, 65, 0, Math.PI * 2);\n                ctx.stroke();\n\n                ctx.fillStyle = \'#10b981\';\n              
+  ctx.beginPath();\n                ctx.arc(canvas.width / 2 - 22, canvas.height / 2 - 25, 6, 0, Math.PI * 2);\n       
+         ctx.arc(canvas.width / 2 + 22, canvas.height / 2 - 25, 6, 0, Math.PI * 2);\n                ctx.fill();\n\n   
+             ctx.strokeStyle = \'#4f46e5\';\n                ctx.lineWidth = 3;\n                ctx.beginPath();\n    
+            ctx.moveTo(canvas.width / 2, canvas.height / 2 - 15);\n                ctx.lineTo(canvas.width / 2 - 5, 
+canvas.height / 2 + 8);\n                ctx.lineTo(canvas.width / 2 + 5, canvas.height / 2 + 8);\n                
+ctx.stroke();\n\n                ctx.strokeStyle = \'#10b981\';\n                ctx.lineWidth = 3.5;\n                
+ctx.beginPath();\n                ctx.arc(canvas.width / 2, canvas.height / 2 + 15, 22, 0.1 * Math.PI, 0.9 * Math.PI, 
+false);\n                ctx.stroke();\n\n                ctx.strokeStyle = \'rgba(79, 70, 229, 0.15)\';\n             
+   ctx.lineWidth = 1;\n                for (let i = 20; i < canvas.width; i += 30) {\n                    
+ctx.beginPath();\n                    ctx.moveTo(i, 0);\n                    ctx.lineTo(i, canvas.height);\n           
+         ctx.stroke();\n                }\n                for (let j = 20; j < canvas.height; j += 30) {\n            
+        ctx.beginPath();\n                    ctx.moveTo(0, j);\n                    ctx.lineTo(canvas.width, j);\n    
+                ctx.stroke();\n                }\n\n                ctx.fillStyle = \'#ffffff\';\n                
+ctx.font = \'bold 10px Outfit, sans-serif\';\n                ctx.textAlign = \'center\';\n                
+ctx.fillText(\'SECURE BIOMETRIC SIGNATURE\', canvas.width / 2, canvas.height - 28);\n                ctx.fillStyle = 
+\'#10b981\';\n                ctx.fillText(\'VERIFICATION OK\', canvas.width / 2, canvas.height - 14);\n            
+}\n        }\n    });\n</script>\n\n    </main>\n    <script 
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+crossorigin="anonymous"></script>\n</body>\n</html>'
+
+----------------------------------------------------------------------
+Ran 19 tests in 1.277s
+
+FAILED (failures=2)
+Destroying test database for alias 'default'...
+

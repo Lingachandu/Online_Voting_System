@@ -1,22 +1,167 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
 {% block content %}
 <div class="dashboard-wrapper">
-    <div class="container admin-container">
-        <h2>🗳️ Admin Audit & Statistics Portal</h2>
+    <div class="admin-top-bar">
+        <div class="admin-top-inner">
+            <div class="admin-top-title">
+                <span class="admin-live-dot"></span>
+                <h2>🗳️ Admin Control Center</h2>
+                <span class="last-updated-badge">Last updated: <span id="last-updated-time">--:--:--</span></span>
+            </div>
+            <div class="admin-top-meta">
+                <div class="meta-pill" id="meta-total-votes">
+                    <span class="meta-icon">📊</span>
+                    <div>
+                        <div class="meta-val" id="header-total-votes">{{ total_votes_system }}</div>
+                        <div class="meta-label">Total Votes Cast</div>
+                    </div>
+                </div>
+                <div class="meta-pill">
+                    <span class="meta-icon">👥</span>
+                    <div>
+                        <div class="meta-val" id="header-total-voters">{{ total_voters }}</div>
+                        <div class="meta-label">Registered Voters</div>
+                    </div>
+                </div>
+                <div class="meta-pill meta-turnout">
+                    <span class="meta-icon">📈</span>
+                    <div>
+                        <div class="meta-val" id="header-turnout">{{ turnout_percent }}%</div>
+                        <div class="meta-label">Voter Turnout</div>
+                    </div>
+                </div>
+                <button class="btn-refresh-now" id="btn-refresh-now" onclick="fetchLiveStats()" title="Refresh now">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+    </div>
 
-        <!-- Section 1: Live Election Statistics -->
+    <div class="container admin-container">
+
+        <!-- ============================================================ -->
+        <!-- SECTION 0: STATE-WISE OVERVIEW CARDS -->
+        <!-- ============================================================ -->
         <section class="admin-section">
-            <h3 class="section-title">📊 Live Election Tally & Predictions</h3>
+            <h3 class="section-title">🗺️ State-wise Voter Turnout & Vote Count</h3>
+            <div class="state-cards-grid" id="state-cards-grid">
+                <!-- AP -->
+                <div class="state-overview-card theme-ap-card" id="state-card-ap">
+                    <div class="soc-header">
+                        <div class="soc-flag">🏦</div>
+                        <div>
+                            <div class="soc-name">Andhra Pradesh</div>
+                            <div class="soc-abbr">AP CM Election</div>
+                        </div>
+                        <div class="soc-status-dot {% if elections_data %}{% for it in elections_data %}{% if it.election.state == 'ap' %}{% if it.election.is_active %}active{% else %}inactive{% endif %}{% endif %}{% endfor %}{% endif %}"></div>
+                    </div>
+                    <div class="soc-stats">
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="ap-votes-cast">{{ ap_votes }}</div>
+                            <div class="soc-stat-label">Votes Cast</div>
+                        </div>
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="ap-voters">{{ ap_voters }}</div>
+                            <div class="soc-stat-label">Registered Voters</div>
+                        </div>
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="ap-turnout">{{ ap_turnout }}%</div>
+                            <div class="soc-stat-label">Turnout</div>
+                        </div>
+                    </div>
+                    <div class="soc-progress-wrap">
+                        <div class="soc-progress-bar-bg">
+                            <div class="soc-progress-bar-fill ap-fill" id="ap-progress-fill" style="width: {{ ap_turnout }}%"></div>
+                        </div>
+                    </div>
+                    <div class="soc-winner-line" id="ap-winner-line">🏆 &mdash;</div>
+                </div>
+
+                <!-- TG -->
+                <div class="state-overview-card theme-tg-card" id="state-card-tg">
+                    <div class="soc-header">
+                        <div class="soc-flag">🌺</div>
+                        <div>
+                            <div class="soc-name">Telangana</div>
+                            <div class="soc-abbr">TS CM Election</div>
+                        </div>
+                        <div class="soc-status-dot {% if elections_data %}{% for it in elections_data %}{% if it.election.state == 'tg' %}{% if it.election.is_active %}active{% else %}inactive{% endif %}{% endif %}{% endfor %}{% endif %}"></div>
+                    </div>
+                    <div class="soc-stats">
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="tg-votes-cast">{{ tg_votes }}</div>
+                            <div class="soc-stat-label">Votes Cast</div>
+                        </div>
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="tg-voters">{{ tg_voters }}</div>
+                            <div class="soc-stat-label">Registered Voters</div>
+                        </div>
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="tg-turnout">{{ tg_turnout }}%</div>
+                            <div class="soc-stat-label">Turnout</div>
+                        </div>
+                    </div>
+                    <div class="soc-progress-wrap">
+                        <div class="soc-progress-bar-bg">
+                            <div class="soc-progress-bar-fill tg-fill" id="tg-progress-fill" style="width: {{ tg_turnout }}%"></div>
+                        </div>
+                    </div>
+                    <div class="soc-winner-line" id="tg-winner-line">🏆 &mdash;</div>
+                </div>
+
+                <!-- Chennai -->
+                <div class="state-overview-card theme-chennai-card" id="state-card-chennai">
+                    <div class="soc-header">
+                        <div class="soc-flag">🐟</div>
+                        <div>
+                            <div class="soc-name">Chennai / Tamil Nadu</div>
+                            <div class="soc-abbr">Chennai CM Election</div>
+                        </div>
+                        <div class="soc-status-dot {% if elections_data %}{% for it in elections_data %}{% if it.election.state == 'chennai' %}{% if it.election.is_active %}active{% else %}inactive{% endif %}{% endif %}{% endfor %}{% endif %}"></div>
+                    </div>
+                    <div class="soc-stats">
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="chennai-votes-cast">{{ chennai_votes }}</div>
+                            <div class="soc-stat-label">Votes Cast</div>
+                        </div>
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="chennai-voters">{{ chennai_voters }}</div>
+                            <div class="soc-stat-label">Registered Voters</div>
+                        </div>
+                        <div class="soc-stat">
+                            <div class="soc-stat-val" id="chennai-turnout">{{ chennai_turnout }}%</div>
+                            <div class="soc-stat-label">Turnout</div>
+                        </div>
+                    </div>
+                    <div class="soc-progress-wrap">
+                        <div class="soc-progress-bar-bg">
+                            <div class="soc-progress-bar-fill chennai-fill" id="chennai-progress-fill" style="width: {{ chennai_turnout }}%"></div>
+                        </div>
+                    </div>
+                    <div class="soc-winner-line" id="chennai-winner-line">🏆 &mdash;</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 1: LIVE ELECTION TALLY WITH CANDIDATE PHOTOS + CHARTS -->
+        <!-- ============================================================ -->
+        <section class="admin-section">
+            <h3 class="section-title">📊 Live Election Tally & Who Is Winning</h3>
             {% if elections_data %}
                 {% for item in elections_data %}
-                <div class="card stat-card">
+                <div class="card stat-card election-stat-card" id="election-card-{{ item.election.id }}">
                     <div class="stat-header">
                         <div class="stat-title-group">
                             <h4>{{ item.election.title }}</h4>
                             {% if item.election.is_active %}
-                                <span class="badge success-badge">Active</span>
+                                <span class="badge success-badge">🟢 Live</span>
                             {% else %}
-                                <span class="badge danger-badge">Closed</span>
+                                <span class="badge danger-badge">🔴 Closed</span>
                             {% endif %}
                         </div>
                         <div class="stat-action-group">
@@ -26,101 +171,173 @@
                                     {% if item.election.is_active %}Close Election{% else %}Open Election{% endif %}
                                 </button>
                             </form>
-                            <span class="badge total-badge">Total Votes: {{ item.total_votes }}</span>
+                            <span class="badge total-badge" id="total-badge-{{ item.election.id }}">Total: {{ item.total_votes }} votes</span>
                         </div>
                     </div>
 
-                    <!-- Prediction / Majority Box -->
-                    <div class="prediction-box">
-                        <div class="predict-item">
-                            <span class="predict-label">Majority Status:</span>
-                            <span class="predict-val font-semibold">{{ item.majority_status }}</span>
+                    <!-- Winner Banner -->
+                    <div class="winner-announcement-box" id="winner-box-{{ item.election.id }}">
+                        {% if item.total_votes == 0 %}
+                        <div class="winner-box-empty">
+                            <span class="winner-empty-icon">🗳️</span>
+                            <span>No votes cast yet — awaiting first vote</span>
                         </div>
-                        <div class="predict-item">
-                            <span class="predict-label">Winning Projections:</span>
-                            <span class="predict-val highlight-val">{{ item.win_chances }}</span>
+                        {% elif item.win_status == 'tie' %}
+                        <div class="winner-box-tie">
+                            <span class="winner-tie-icon">⚖️</span>
+                            <strong>It's a Tie!</strong> — Multiple candidates at equal votes
+                        </div>
+                        {% else %}
+                        <div class="winner-box-active {% if item.majority_percent >= 50 %}winner-strong{% else %}winner-leading{% endif %} d-flex align-items-center gap-3">
+                            <div class="winner-crown d-flex align-items-center gap-2">
+                                <span class="fs-1">🏆</span>
+                                {% if item.winner_photo %}
+                                    <img src="{{ item.winner_photo }}" class="rounded-circle border border-white border-2" style="width: 50px; height: 50px; object-fit: cover;" alt="Winner">
+                                {% endif %}
+                            </div>
+                            <div class="winner-details">
+                                <div class="winner-tag">{% if item.majority_percent >= 50 %}Projected Winner{% else %}Currently Leading{% endif %}</div>
+                                <div class="winner-name-big" id="winner-name-{{ item.election.id }}">{{ item.majority_status }}</div>
+                                <div class="winner-percent-line" id="winner-pct-{{ item.election.id }}">{{ item.majority_percent }}% of votes</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Two-column: Candidate Cards + Mini Donut Chart -->
+                    <div class="election-content-grid">
+                        <!-- Candidate Cards with Photos -->
+                        <div class="candidate-cards-col">
+                            {% for cand in item.candidates %}
+                            <div class="cand-photo-card {% if forloop.first and item.total_votes > 0 %}cand-leading{% endif %}" id="cand-card-{{ cand.id }}">
+                                <div class="cand-photo-wrap">
+                                    {% if cand.photo_url %}
+                                        <img src="{{ cand.photo_url }}" class="cand-photo" alt="{{ cand.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                        <div class="cand-photo-fallback" style="display:none;">{{ cand.symbol }}</div>
+                                    {% else %}
+                                        <div class="cand-photo-fallback">{{ cand.symbol }}</div>
+                                    {% endif %}
+                                    {% if item.majority_status == cand.name|add:" ("|add:cand.party|add:")" and item.total_votes > 0 %}
+                                        <div class="cand-leading-badge">🏆</div>
+                                    {% endif %}
+                                </div>
+                                <div class="cand-info">
+                                    <div class="cand-nm" id="cand-name-{{ cand.id }}">{{ cand.name }}</div>
+                                    <div class="cand-pty">
+                                        <span class="cand-symbol-badge">{{ cand.symbol }}</span>
+                                        {{ cand.party }}
+                                    </div>
+                                    <div class="cand-votes-stat" id="cand-votes-{{ cand.id }}">
+                                        <span class="cand-vote-num">{{ cand.votes }}</span>
+                                        <span class="cand-vote-label">votes</span>
+                                        <span class="cand-pct-badge" id="cand-pct-{{ cand.id }}">{{ cand.percent }}%</span>
+                                    </div>
+                                    <div class="cand-progress-mini">
+                                        <div class="cand-progress-fill" id="cand-fill-{{ cand.id }}" style="width: {{ cand.percent }}%"></div>
+                                    </div>
+                                </div>
+                                <!-- Remove btn -->
+                                <form method="POST" action="{% url 'remove_candidate' cand.id %}" class="remove-cand-form-abs" onsubmit="return confirm('Remove {{ cand.name }}?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-remove-cand-abs" title="Remove candidate">✕</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- SVG Donut Chart (populated by JS using elections_json data) -->
+                        <div class="chart-col">
+                            <div class="donut-chart-wrap">
+                                <svg viewBox="0 0 200 200" class="donut-svg" id="donut-{{ item.election.id }}">
+                                    <!-- Background ring -->
+                                    <circle cx="100" cy="100" r="70" fill="none" stroke="#f1f5f9" stroke-width="28"/>
+                                    <!-- Arcs injected by drawDonut() JS function -->
+                                    <text x="100" y="96" text-anchor="middle" class="donut-center-num" id="donut-total-{{ item.election.id }}">{{ item.total_votes }}</text>
+                                    <text x="100" y="115" text-anchor="middle" class="donut-center-label">votes</text>
+                                </svg>
+                                <!-- Chart Legend (populated by JS) -->
+                                <div class="donut-legend" id="legend-{{ item.election.id }}">
+                                    {% for cand in item.candidates %}
+                                    <div class="legend-item">
+                                        <span class="legend-dot" id="ldot-{{ cand.id }}"></span>
+                                        <span class="legend-label">{{ cand.symbol }} {{ cand.name }}</span>
+                                        <span class="legend-pct" id="legend-pct-{{ cand.id }}">{{ cand.percent }}%</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Candidates Live Progress bars -->
-                    <div class="candidates-progress-list">
-                        {% for cand in item.candidates %}
-                        <div class="candidate-progress-item">
-                            <div class="progress-details">
-                                <span class="cand-details-text">
-                                    <strong>{{ cand.symbol }} {{ cand.name }}</strong> ({{ cand.party }})
-                                </span>
-                                <span class="cand-votes-text">
-                                    <strong>{{ cand.votes }}</strong> votes ({{ cand.percent }}%)
-                                    <!-- Remove Candidate Action -->
-                                    <form method="POST" action="{% url 'remove_candidate' cand.id %}" class="remove-cand-form" onsubmit="return confirm('Are you sure you want to remove this candidate?');">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-remove-cand" title="Remove Candidate">❌</button>
-                                    </form>
-                                </span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: {{ cand.percent }}%;"></div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+                </div><!-- end .stat-card -->
                 {% endfor %}
+
             {% else %}
-                <p class="no-data">No active elections available in database.</p>
+                <p class="no-data">No elections available in database.</p>
             {% endif %}
         </section>
 
-        <!-- Section 2: Manage Candidates (Add Candidate) -->
+        <!-- ============================================================ -->
+        <!-- SECTION 2: ADD CANDIDATE -->
+        <!-- ============================================================ -->
         <section class="admin-section">
             <h3 class="section-title">👤 Add Candidate / Leader</h3>
-            <div class="card add-candidate-card">
-                <form method="POST" action="{% url 'add_candidate' %}" class="admin-add-form">
+            <div class="card add-candidate-card shadow-sm border rounded-3 p-4">
+                <form method="POST" action="{% url 'add_candidate' %}" class="row g-3" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="form-row">
-                        <div class="form-group form-group-third">
-                            <label>Select Election</label>
-                            <select name="election_id" required>
-                                <option value="" disabled selected>Select active portal...</option>
-                                {% for elect in elections %}
-                                    <option value="{{ elect.id }}">{{ elect.title }} ({% if elect.state == 'ap' %}AP{% elif elect.state == 'tg' %}TG{% else %}Chennai{% endif %})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group form-group-third">
-                            <label>Candidate Name</label>
-                            <input type="text" name="name" required placeholder="Name of candidate">
-                        </div>
-                        <div class="form-group form-group-sixth">
-                            <label>Party Affinity</label>
-                            <input type="text" name="party_affinity" required placeholder="Party name">
-                        </div>
-                        <div class="form-group form-group-sixth">
-                            <label>Party Symbol (Emoji)</label>
-                            <input type="text" name="party_symbol" placeholder="🦁, ⚖️, 🐘, 🚗..." value="🗳️">
-                        </div>
+                    <div class="col-md-3 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Select Election</label>
+                        <select name="election_id" class="form-select" required>
+                            <option value="" disabled selected>Select active portal...</option>
+                            {% for elect in elections %}
+                                <option value="{{ elect.id }}">{{ elect.title }} ({% if elect.state == 'ap' %}AP{% elif elect.state == 'tg' %}TG{% else %}Chennai{% endif %})</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <button type="submit" class="btn btn-admin-add">Add Candidate</button>
+                    <div class="col-md-2 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Candidate Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="Name of candidate">
+                    </div>
+                    <div class="col-md-2 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Party Affinity</label>
+                        <input type="text" name="party_affinity" class="form-control" required placeholder="Party name">
+                    </div>
+                    <div class="col-md-2 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Party Symbol (Emoji)</label>
+                        <input type="text" name="party_symbol" class="form-control" placeholder="🦁, ⚖️, 🐘, 🚗..." value="">
+                    </div>
+                    <div class="col-md-1 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Party Color</label>
+                        <input type="color" name="party_color" class="form-control form-control-color w-100" style="height: 38px; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1;" value="#4f46e5" title="Choose party color">
+                    </div>
+                    <div class="col-md-2 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Upload Photo</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*" title="Upload candidate photo">
+                    </div>
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-primary px-4 py-2" style="width: auto; background: var(--primary); border: none;">➕ Add Candidate</button>
+                    </div>
                 </form>
             </div>
         </section>
 
-        <!-- Section 3: Detailed Voter Audit Log -->
+        <!-- ============================================================ -->
+        <!-- SECTION 3: VOTER AUDIT LOG -->
+        <!-- ============================================================ -->
         <section class="admin-section">
-            <h3 class="section-title">📋 Voter Audit Log (Voter-to-Candidate Trail)</h3>
+            <h3 class="section-title">📋 Voter Audit Log (Voter → Candidate Trail)</h3>
             <div class="table-wrapper">
                 <table class="audit-table">
                     <thead>
                         <tr>
-                            <th>Face Profile</th>
+                            <th>Face</th>
                             <th>Voter ID</th>
-                            <th>Mobile Number</th>
-                            <th>Aadhaar Number</th>
+                            <th>Mobile</th>
+                            <th>Aadhaar</th>
                             <th>State</th>
-                            <th>Election Portal</th>
-                            <th>Chosen Candidate</th>
-                            <th>Affiliated Party</th>
+                            <th>Election</th>
+                            <th>Voted For</th>
+                            <th>Party</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -133,7 +350,7 @@
                                         <img src="{{ vote.voter.face_image }}" class="voter-face-thumbnail rounded-circle" alt="Face"
                                              style="border: 1.5px solid var(--primary);" title="Face registered ✅">
                                     {% else %}
-                                        <div class="voter-face-placeholder rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border: 1.5px dashed var(--border); font-size: 0.8rem; color: var(--text-muted);">👤</div>
+                                        <div class="voter-face-placeholder rounded-circle" style="width:32px;height:32px;border:1.5px dashed var(--border);font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;justify-content:center;">👤</div>
                                     {% endif %}
                                 </td>
                                 <td class="font-mono font-semibold">{{ vote.voter.id }}</td>
@@ -141,15 +358,22 @@
                                 <td class="font-mono">{% if vote.voter.aadhaar_number %}{{ vote.voter.aadhaar_number }}{% else %}-{% endif %}</td>
                                 <td>{% if vote.voter.state == 'ap' %}🟢 AP{% elif vote.voter.state == 'tg' %}🔴 TG{% else %}🔵 Chennai{% endif %}</td>
                                 <td>{{ vote.election.title }}</td>
-                                <td><strong>{{ vote.candidate.party_symbol }} {{ vote.candidate.name }}</strong></td>
                                 <td>
-                                    <span class="badge party-badge">{{ vote.candidate.party_affinity }}</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% if vote.candidate.photo_url %}
+                                            <img src="{{ vote.candidate.photo_url }}" class="rounded-circle border border-light-subtle shadow-sm" style="width: 32px; height: 32px; object-fit: cover;" alt="{{ vote.candidate.name }}">
+                                        {% else %}
+                                            <span class="fs-4">{{ vote.candidate.party_symbol }}</span>
+                                        {% endif %}
+                                        <strong>{{ vote.candidate.name }}</strong>
+                                    </div>
                                 </td>
+                                <td><span class="badge party-badge">{{ vote.candidate.party_affinity }}</span></td>
                                 <td>
                                     {% if vote.voter.face_image %}
-                                    <form method="POST" action="{% url 'reset_voter_face' vote.voter.id %}" style="display:inline;" onsubmit="return confirm('Reset face biometric for {{ vote.voter.phone_number }}? They will be able to login again.');">
+                                    <form method="POST" action="{% url 'reset_voter_face' vote.voter.id %}" style="display:inline;" onsubmit="return confirm('Reset face biometric for {{ vote.voter.phone_number }}?');">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn-remove-cand" title="Reset Face Biometric" style="font-size:1rem; opacity:0.7;" >🔄</button>
+                                        <button type="submit" class="btn-remove-cand" title="Reset Face Biometric" style="font-size:1rem;opacity:0.7;">🔄</button>
                                     </form>
                                     {% else %}
                                     <span style="color:var(--text-muted);font-size:0.8rem;">—</span>
@@ -168,4 +392,270 @@
         </section>
     </div>
 </div>
+
+<!-- ============================================================ -->
+<!-- INLINE JS: Real-time chart colors (no template filters needed) -->
+<!-- ============================================================ -->
+<script>
+// Donut chart colors mapped to political parties
+const PARTY_COLORS = {
+    'TDP': '#facc15',           // Yellow
+    'YSRCP': '#2563eb',         // Blue
+    'Janasena Party': '#f8fafc', // White / Off-white
+    'INC': '#dc2626',           // Red
+    'BRS': '#db2777',           // Pink
+    'TVK': '#ffffff',           // White
+    'DMK': '#ea580c',           // Rising Sun Orange/Red
+};
+
+function getCandidateColor(cand, index) {
+    const party = cand.party || cand.party_affinity;
+    if (party && PARTY_COLORS[party]) {
+        return PARTY_COLORS[party];
+    }
+    const fallbacks = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+    return fallbacks[index % fallbacks.length];
+}
+
+// Build initial donut arcs via JS to avoid Django template filter complexity
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Draw donut charts from server-rendered data ---
+    const electionsData = {{ elections_json|safe }};
+    electionsData.forEach(election => {
+        drawDonut(election.election_id, election.candidates, election.total_votes);
+        updateWinnerBox(election.election_id, election);
+        updateStateBadge(election.state, election);
+    });
+
+    // Update state cards with winner lines from initial data
+    updateStateWinnerLines(electionsData);
+
+    // Start live polling every 30 seconds
+    setInterval(fetchLiveStats, 30000);
+    // Initial fetch immediately after load to sync
+    setTimeout(fetchLiveStats, 1500);
+});
+
+function drawDonut(electionId, candidates, totalVotes) {
+    const svg = document.getElementById('donut-' + electionId);
+    if (!svg) return;
+
+    // Remove existing arcs
+    svg.querySelectorAll('.donut-arc').forEach(a => a.remove());
+
+    const totalNumEl = svg.querySelector('.donut-center-num');
+    if (totalNumEl) totalNumEl.textContent = totalVotes;
+
+    if (totalVotes === 0) {
+        // Ensure gray placeholder visible
+        return;
+    }
+
+    const circumference = 2 * Math.PI * 70; // ≈ 439.82
+    let offset = 0;
+
+    candidates.forEach((cand, i) => {
+        const color = getCandidateColor(cand, i);
+        const pct = cand.percent / 100;
+        const dashLen = pct * circumference;
+        const gapLen = circumference - dashLen;
+
+        const arc = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        arc.setAttribute('cx', '100');
+        arc.setAttribute('cy', '100');
+        arc.setAttribute('r', '70');
+        arc.setAttribute('fill', 'none');
+        arc.setAttribute('stroke', color);
+        arc.setAttribute('stroke-width', '28');
+        arc.setAttribute('stroke-dasharray', dashLen + ' ' + gapLen);
+        arc.setAttribute('stroke-dashoffset', -offset);
+        arc.setAttribute('transform', 'rotate(-90 100 100)');
+        arc.classList.add('donut-arc');
+        arc.dataset.candId = cand.id;
+        arc.style.transition = 'stroke-dasharray 0.8s ease';
+        svg.insertBefore(arc, svg.querySelector('.donut-center-num'));
+        offset += dashLen;
+
+        // Color the legend dot
+        const dot = document.getElementById('ldot-' + cand.id);
+        if (dot) {
+            dot.style.background = color;
+            if (color === '#ffffff' || color === '#f8fafc') {
+                dot.style.border = '1px solid #cbd5e1';
+            } else {
+                dot.style.border = 'none';
+            }
+        }
+
+        // Color the progress bar fill
+        const fill = document.getElementById('cand-fill-' + cand.id);
+        if (fill) {
+            fill.style.background = `linear-gradient(to right, ${color}, ${color}cc)`;
+            if (color === '#ffffff' || color === '#f8fafc') {
+                fill.style.border = '1px solid #cbd5e1';
+            } else {
+                fill.style.border = 'none';
+            }
+        }
+        
+        // Color the pct badge
+        const badge = document.getElementById('cand-pct-' + cand.id);
+        if (badge) {
+            badge.style.background = color;
+            if (color === '#ffffff' || color === '#f8fafc') {
+                badge.style.color = '#0f172a';
+                badge.style.border = '1px solid #cbd5e1';
+            } else {
+                badge.style.color = 'white';
+                badge.style.border = 'none';
+            }
+        }
+    });
+}
+
+
+function updateWinnerBox(electionId, data) {
+    const box = document.getElementById('winner-box-' + electionId);
+    if (!box) return;
+
+    let html = '';
+    if (data.total_votes === 0) {
+        html = `<div class="winner-box-empty"><span class="winner-empty-icon">🗳️</span><span>No votes cast yet — awaiting first vote</span></div>`;
+    } else if (data.win_status === 'tie') {
+        html = `<div class="winner-box-tie"><span class="winner-tie-icon">⚖️</span><strong>It's a Tie!</strong> — Multiple candidates at equal votes</div>`;
+    } else {
+        const isStrong = data.win_status === 'strong_win';
+        const imgHtml = data.winner_photo ? `<img src="${data.winner_photo}" class="rounded-circle border border-white border-2" style="width: 50px; height: 50px; object-fit: cover;" alt="Winner">` : '';
+        html = `
+        <div class="winner-box-active ${isStrong ? 'winner-strong' : 'winner-leading'} d-flex align-items-center gap-3">
+            <div class="winner-crown d-flex align-items-center gap-2">
+                <span class="fs-1">🏆</span>
+                ${imgHtml}
+            </div>
+            <div class="winner-details">
+                <div class="winner-tag">${isStrong ? 'Projected Winner' : 'Currently Leading'}</div>
+                <div class="winner-name-big">${data.winner_name || ''}</div>
+                <div class="winner-percent-line">${data.winner_percent}% of votes</div>
+            </div>
+        </div>`;
+    }
+    box.innerHTML = html;
+}
+
+function updateStateWinnerLines(electionsData) {
+    electionsData.forEach(election => {
+        const stateCode = election.state;
+        const el = document.getElementById(stateCode + '-winner-line');
+        if (!el) return;
+        if (election.total_votes === 0) {
+            el.textContent = '🗳️ No votes yet';
+        } else if (election.win_status === 'tie') {
+            el.textContent = '⚖️ Tie — too close to call';
+        } else {
+            const icon = election.win_status === 'strong_win' ? '👑' : '📊';
+            el.textContent = `${icon} ${election.winner_name} (${election.winner_percent}%)`;
+        }
+    });
+}
+
+function updateStateBadge(stateCode, data) {
+    const ids = {
+        'ap': {votes: 'ap-votes-cast', turnout: 'ap-turnout', fill: 'ap-progress-fill'},
+        'tg': {votes: 'tg-votes-cast', turnout: 'tg-turnout', fill: 'tg-progress-fill'},
+        'chennai': {votes: 'chennai-votes-cast', turnout: 'chennai-turnout', fill: 'chennai-progress-fill'},
+    };
+    const m = ids[stateCode];
+    if (!m) return;
+}
+
+async function fetchLiveStats() {
+    const btn = document.getElementById('btn-refresh-now');
+    if (btn) btn.classList.add('spinning');
+    try {
+        const resp = await fetch('/api/live-stats/');
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        // Update header stats
+        safeText('header-total-votes', data.total_votes_system);
+        safeText('header-total-voters', data.total_voters);
+        safeText('header-turnout', data.turnout_percent + '%');
+        safeText('last-updated-time', data.timestamp);
+
+        // Update state cards
+        const stateMap = data.state_data;
+        for (const [code, info] of Object.entries(stateMap)) {
+            safeText(code + '-votes-cast', info.votes_cast);
+            safeText(code + '-voters', info.total_voters);
+            safeText(code + '-turnout', info.turnout_percent + '%');
+            const fill = document.getElementById(code + '-progress-fill');
+            if (fill) fill.style.width = info.turnout_percent + '%';
+        }
+
+        // Update election charts
+        data.elections.forEach(election => {
+            // Update total badge
+            const badge = document.getElementById('total-badge-' + election.election_id);
+            if (badge) badge.textContent = 'Total: ' + election.total_votes + ' votes';
+
+            // Redraw donut
+            drawDonut(election.election_id, election.candidates, election.total_votes);
+
+            // Update winner box
+            updateWinnerBox(election.election_id, election);
+
+            // Update candidate cards
+            election.candidates.forEach(cand => {
+                safeText('cand-votes-' + cand.id, '');
+                const votesEl = document.getElementById('cand-votes-' + cand.id);
+                if (votesEl) {
+                    votesEl.innerHTML = `<span class="cand-vote-num">${cand.votes}</span> <span class="cand-vote-label">votes</span> <span class="cand-pct-badge">${cand.percent}%</span>`;
+                }
+                const fill = document.getElementById('cand-fill-' + cand.id);
+                if (fill) fill.style.width = cand.percent + '%';
+
+                // Update legend pct
+                const legendPct = document.getElementById('legend-pct-' + cand.id);
+                if (legendPct) legendPct.textContent = cand.percent + '%';
+            });
+
+            // Update legend
+            updateDonutLegend(election.election_id, election.candidates);
+        });
+
+        // Update state winner lines
+        updateStateWinnerLines(data.elections);
+
+    } catch(err) {
+        console.warn('Live stats fetch error:', err);
+    } finally {
+        if (btn) {
+            btn.classList.remove('spinning');
+            btn.classList.add('pulse-flash');
+            setTimeout(() => btn.classList.remove('pulse-flash'), 600);
+        }
+    }
+}
+
+function updateDonutLegend(electionId, candidates) {
+    const legend = document.getElementById('legend-' + electionId);
+    if (!legend) return;
+    legend.innerHTML = candidates.map((c, i) => {
+        const color = getCandidateColor(c, i);
+        const borderStyle = (color === '#ffffff' || color === '#f8fafc') ? 'border: 1px solid #cbd5e1;' : '';
+        return `
+            <div class="legend-item">
+                <span class="legend-dot" style="background:${color}; ${borderStyle}"></span>
+                <span class="legend-label">${c.symbol} ${c.name}</span>
+                <span class="legend-pct" id="legend-pct-${c.id}">${c.percent}%</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function safeText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+}
+</script>
 {% endblock %}

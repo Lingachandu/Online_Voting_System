@@ -11,4 +11,5 @@ urlpatterns = [
     path('candidate/add/', views.add_candidate, name='add_candidate'),
     path('candidate/remove/<int:candidate_id>/', views.remove_candidate, name='remove_candidate'),
     path('voter/reset-face/<int:voter_id>/', views.reset_voter_face, name='reset_voter_face'),
-]
+    path('api/live-stats/', views.live_stats_api, name='live_stats_api'),
+]

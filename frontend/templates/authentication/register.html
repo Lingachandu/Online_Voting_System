@@ -9,8 +9,8 @@
         <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: var(--radius); background: var(--card-bg);">
             <div class="text-center mb-4">
                 <span class="fs-1">🗳️</span>
-                <h2 class="fw-bold mt-2 text-dark">Secure Login Portal</h2>
-                <p class="text-muted small">Please verify your credentials to access the voting portal.</p>
+                <h2 class="fw-bold mt-2 text-dark">Secure Registration</h2>
+                <p class="text-muted small">Please fill in your details to register a new voting profile.</p>
             </div>
 
             {% if error %}
@@ -20,7 +20,7 @@
                 </div>
             {% endif %}
 
-            <form id="login-form" method="POST">
+            <form id="register-form" method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="face_image" id="face_image_input">
 
@@ -30,6 +30,20 @@
                         <option value="voter">Voter</option>
                         <option value="admin">Admin</option>
                     </select>
+                </div>
+
+                <div class="mb-4 animate-fade" id="state-group">
+                    <label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Select State</label>
+                    <select name="state" id="state-select" class="form-select form-select-lg" style="border-radius: var(--radius);">
+                        <option value="ap">Andhra Pradesh (AP)</option>
+                        <option value="tg">Telangana (Hyderabad)</option>
+                        <option value="chennai">Chennai (Tamil Nadu)</option>
+                    </select>
+                </div>
+
+                <div class="mb-4 animate-fade" id="aadhaar-group">
+                    <label class="form-label fw-bold text-secondary text-uppercase small" style="letter-spacing: 0.5px;">Aadhaar Number (12 Digits)</label>
+                    <input type="text" name="aadhaar_number" id="aadhaar-input" class="form-control form-control-lg" placeholder="123456789012" maxlength="12" style="border-radius: var(--radius);">
                 </div>
 
                 <div class="mb-4">
@@ -44,10 +58,10 @@
                     </label>
                 </div>
 
-                <button type="submit" id="submit-btn" class="btn btn-primary btn-lg w-100 py-3 text-uppercase fw-bold shadow-sm" style="border-radius: var(--radius); background: var(--primary); border: none;">Generate OTP</button>
+                <button type="submit" id="submit-btn" class="btn btn-primary btn-lg w-100 py-3 text-uppercase fw-bold shadow-sm" style="border-radius: var(--radius); background: var(--primary); border: none;">Register & Get OTP</button>
             
                 <div class="text-center mt-4">
-                    <span class="text-muted small">Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none fw-bold text-primary">Register here</a></span>
+                    <span class="text-muted small">Already have an account? <a href="{% url 'login' %}" class="text-decoration-none fw-bold text-primary">Login here</a></span>
                 </div>
             </form>
         </div>
@@ -59,10 +73,10 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center border-0 shadow-lg" style="border-radius: var(--radius);">
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title w-100 fw-bold text-dark" id="faceAuthModalLabel">🔒 Biometric Face Authentication</h5>
+                <h5 class="modal-title w-100 fw-bold text-dark" id="faceAuthModalLabel">🔒 Register Biometric Face Image</h5>
             </div>
             <div class="modal-body p-4">
-                <p class="text-muted small mb-4">Align your face within the scanner ring. Do not close this browser window.</p>
+                <p class="text-muted small mb-4">Align your face within the scanner ring to register your face biometric.</p>
                 
                 <!-- Circular Scanner Window -->
                 <div class="scanner-container mx-auto position-relative mb-4" style="width: 240px; height: 240px; border-radius: 50%; overflow: hidden; background: #000; border: 4px solid var(--primary);">
@@ -87,14 +101,35 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const roleSelect = document.getElementById("role-select");
-        const loginForm = document.getElementById("login-form");
+        const stateGroup = document.getElementById("state-group");
+        const aadhaarInput = document.getElementById("aadhaar-input");
+        const aadhaarGroup = document.getElementById("aadhaar-group");
+        const registerForm = document.getElementById("register-form");
         const faceModal = new bootstrap.Modal(document.getElementById('faceAuthModal'));
 
+        function updateFieldsVisibility() {
+            const isVoter = (roleSelect.value === "voter");
+
+            if (isVoter) {
+                stateGroup.style.display = "block";
+                aadhaarGroup.style.display = "block";
+                aadhaarInput.setAttribute("required", "required");
+            } else {
+                stateGroup.style.display = "none";
+                aadhaarGroup.style.display = "none";
+                aadhaarInput.removeAttribute("required");
+                aadhaarInput.value = "";
+            }
+        }
+
+        roleSelect.addEventListener("change", updateFieldsVisibility);
+        updateFieldsVisibility(); // Initial run
+
         // Form Submission interceptor for Voter Face Scanning
-        loginForm.addEventListener("submit", function(e) {
+        registerForm.addEventListener("submit", function(e) {
             const isVoter = (roleSelect.value === "voter");
             if (!isVoter) {
-                // Admin login continues immediately
+                // Admin registration continues immediately
                 return;
             }
 
@@ -135,9 +170,9 @@
                 const statusMessages = [
                     "Locating face outline...",
                     "Analyzing biometric geometry...",
-                    "Verifying registration data...",
-                    "Performing secure match...",
-                    "Biometric security handshake complete!"
+                    "Registering secure record...",
+                    "Encrypting biometric hash...",
+                    "Face biometric registration complete!"
                 ];
 
                 const interval = setInterval(() => {
@@ -174,7 +209,7 @@
                 
                 setTimeout(() => {
                     faceModal.hide();
-                    loginForm.submit();
+                    registerForm.submit();
                 }, 400);
             }
 

@@ -34,6 +34,7 @@ class AuthenticationModelTests(TestCase):
 class AuthenticationViewTests(TestCase):
     def setUp(self):
         self.login_url = reverse('login')
+        self.register_url = reverse('register')
         self.verify_otp_url = reverse('verify_otp')
         self.terms_url = reverse('terms')
         self.privacy_url = reverse('privacy')
@@ -42,6 +43,11 @@ class AuthenticationViewTests(TestCase):
         response = self.client.get(self.login_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'authentication/login.html')
+
+    def test_register_page_renders_successfully(self):
+        response = self.client.get(self.register_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'authentication/register.html')
 
     def test_login_redirects_authenticated_users(self):
         # Authenticate a voter user
@@ -66,7 +72,7 @@ class AuthenticationViewTests(TestCase):
             'agree_terms': 'on'
         })
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'You are not admin')
+        self.assertContains(response, 'You are not authorized as an administrator.')
 
     def test_login_role_mismatch_returns_error(self):
         # Create user as voter first, but using the admin-allowed number 9876543210
@@ -81,33 +87,41 @@ class AuthenticationViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'registered as VOTER. Please select the correct role.')
 
-    def test_login_ap_voter_invalid_aadhaar_returns_error(self):
-        response = self.client.post(self.login_url, {
+    def test_register_ap_voter_invalid_aadhaar_returns_error(self):
+        dummy_face = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        response = self.client.post(reverse('register'), {
             'phone_number': '8888888888',
             'role': 'voter',
             'state': 'ap',
             'aadhaar_number': '12345', # too short
-            'agree_terms': 'on'
+            'agree_terms': 'on',
+            'face_image': dummy_face
         })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Aadhaar number must be exactly 12 numeric digits')
 
     def test_login_ap_voter_valid_aadhaar_success(self):
+        dummy_face = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        User.objects.create_user(phone_number='8888888888', role='voter', state='ap', aadhaar_number='123456789012', face_image=dummy_face)
         response = self.client.post(self.login_url, {
             'phone_number': '8888888888',
             'role': 'voter',
             'state': 'ap',
             'aadhaar_number': '123456789012',
-            'agree_terms': 'on'
+            'agree_terms': 'on',
+            'face_image': dummy_face
         })
         self.assertRedirects(response, self.verify_otp_url)
 
     def test_login_generates_otp_and_redirects(self):
+        dummy_face = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        User.objects.create_user(phone_number='8888888888', role='voter', state='tg', face_image=dummy_face)
         response = self.client.post(self.login_url, {
             'phone_number': '8888888888',
             'role': 'voter',
             'state': 'tg',
-            'agree_terms': 'on'
+            'agree_terms': 'on',
+            'face_image': dummy_face
         })
         self.assertRedirects(response, self.verify_otp_url)
         self.assertEqual(self.client.session['pre_auth_phone'], '8888888888')
@@ -172,6 +186,7 @@ class AuthenticationViewTests(TestCase):
 
     def test_login_first_time_stores_face_image(self):
         dummy_face = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        User.objects.create_user(phone_number='8888888888', role='voter', state='ap', aadhaar_number='123456789012', face_image=dummy_face)
         response = self.client.post(self.login_url, {
             'phone_number': '8888888888',
             'role': 'voter',
@@ -196,7 +211,7 @@ class AuthenticationViewTests(TestCase):
         
         # Create election and candidate, and cast a vote for this user
         election = Election.objects.create(title="Active Election", description="Active", is_active=True)
-        candidate = Candidate.objects.create(election=election, name="Candidate A", party_affinity="Party A")
+        candidate = Candidate.objects.create(election=election, name="Chandra Babu Naidu", party_affinity="TDP")
         Vote.objects.create(voter=user, election=election, candidate=candidate)
         
         # Now try to log in again with the same credentials and face image
@@ -228,4 +243,33 @@ class AuthenticationViewTests(TestCase):
             'face_image': dummy_face
         })
         self.assertRedirects(response, self.verify_otp_url)
+
+    def test_login_face_mismatch_fails(self):
+        registered_face = "registered_face_signature"
+        login_face = "different_face_signature"
+        
+        # Create voter with a specific face image
+        user = User.objects.create_user(phone_number="8888888888", role="voter", state="ap", aadhaar_number="123456789012", face_image=registered_face)
+        
+        response = self.client.post(self.login_url, {
+            'phone_number': '8888888888',
+            'role': 'voter',
+            'state': 'ap',
+            'agree_terms': 'on',
+            'face_image': login_face
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Face biometrics do not match registered voter record.')
+
+    def test_login_subsequent_times_bypasses_face_and_otp(self):
+        # Create voter who has already logged in successfully once
+        user = User.objects.create_user(phone_number="8888888888", role="voter", state="ap", aadhaar_number="123456789012", has_logged_in=True)
+        
+        response = self.client.post(self.login_url, {
+            'phone_number': '8888888888',
+            'role': 'voter',
+            'agree_terms': 'on'
+        })
+        # Should redirect directly to state dashboard (AP) bypassing face scan and OTP verification
+        self.assertRedirects(response, reverse('voter_dashboard_ap'))
 

@@ -1,0 +1,84 @@
+/* State-specific theme variables */
+.theme-ap {
+    --primary: #059669;
+    --primary-hover: #047857;
+    --primary-light: #e6f7f0;
+}
+.theme-tg {
+    --primary: #db2777;
+    --primary-hover: #be185d;
+    --primary-light: #fdf2f8;
+}
+.theme-chennai {
+    --primary: #0284c7;
+    --primary-hover: #0369a1;
+    --primary-light: #f0f9ff;
+}
+
+/* Custom theme components */
+.btn-primary-custom {
+    background-color: var(--primary, #4f46e5) !important;
+    border-color: var(--primary, #4f46e5) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+.btn-primary-custom:hover {
+    background-color: var(--primary-hover, #4338ca) !important;
+    border-color: var(--primary-hover, #4338ca) !important;
+    transform: translateY(-1px);
+}
+
+.avatar-size {
+    width: 90px !important;
+    height: 90px !important;
+    object-fit: cover !important;
+}
+
+.cand-photo-size {
+    width: 60px !important;
+    height: 60px !important;
+    object-fit: cover !important;
+    border: 2px solid #dee2e6;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Premium Candidate Cards Grid styling */
+.candidate-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background-color: #ffffff;
+}
+
+.candidate-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--candidate-color, var(--primary, #4f46e5)) !important;
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Selection highlight using :has selector */
+.candidate-card:has(input[type="radio"]:checked) {
+    background-color: var(--primary-light, #f3f4f6) !important;
+    background-color: color-mix(in srgb, var(--candidate-color, var(--primary, #4f46e5)) 8%, white) !important;
+    border-color: var(--candidate-color, var(--primary, #4f46e5)) !important;
+    box-shadow: 0 0 0 1px var(--candidate-color, var(--primary, #4f46e5)), 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* Warning Banner Styles */
+.national-warning-banner {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-left: 5px solid #d97706;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.national-warning-banner:hover {
+    transform: scale(1.005);
+    box-shadow: 0 6px 12px -1px rgba(0, 0, 0, 0.08);
+}
+
