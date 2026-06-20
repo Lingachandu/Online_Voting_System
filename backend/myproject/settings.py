@@ -17,7 +17,7 @@ if env_path.exists():
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-voting-key')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,.onrender.com').split(',')
 
 # Security / Admin Config
 ADMIN_PHONE_NUMBER = os.environ.get('ADMIN_PHONE_NUMBER', '9876543210')
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,5 +67,6 @@ TEMPLATES = [
 DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend', 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
