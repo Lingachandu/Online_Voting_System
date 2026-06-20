@@ -2,9 +2,25 @@ import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-SECRET_KEY = 'django-insecure-voting-key'
-DEBUG = True
+
+# Load environment variables from .env file if it exists (does not overwrite existing environment variables)
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    with open(env_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, val = line.split('=', 1)
+                key = key.strip()
+                if key not in os.environ:
+                    os.environ[key] = val.strip()
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-voting-key')
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = []
+
+# Security / Admin Config
+ADMIN_PHONE_NUMBER = os.environ.get('ADMIN_PHONE_NUMBER', '9876543210')
 
 INSTALLED_APPS = [
     'django.contrib.admin',

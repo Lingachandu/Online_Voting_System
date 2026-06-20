@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django database
+db.sqlite3
+
+# Local environment configuration
+.env
+.env*.local
+
+# Virtual environments
+env/
+venv/
+ENV/
+.env/
+.venv/
+
+# Editor / IDE configuration
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Output / Test reports
+backend/test_output.txt
+backend/test_output_ascii.txt

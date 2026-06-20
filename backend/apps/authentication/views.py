@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
+from django.conf import settings
 from .models import CustomUser, OTPVerification
 from apps.elections.views import seed_default_data
 import random
@@ -31,8 +32,8 @@ def login_view(request):
                 'error': 'You must agree to the Terms & Conditions and Privacy Policy.'
             })
         
-        # Enforce that admins can only login with phone number 9876543210
-        if role == 'admin' and phone != '9876543210':
+        # Enforce that admins can only login with the configured admin phone number
+        if role == 'admin' and phone != settings.ADMIN_PHONE_NUMBER:
             return render(request, 'authentication/login.html', {
                 'error': 'You are not authorized as an administrator.'
             })
@@ -114,8 +115,8 @@ def register_view(request):
                 'error': 'You must agree to the Terms & Conditions and Privacy Policy.'
             })
         
-        # Enforce that admins can only register with phone number 9876543210
-        if role == 'admin' and phone != '9876543210':
+        # Enforce that admins can only register with the configured admin phone number
+        if role == 'admin' and phone != settings.ADMIN_PHONE_NUMBER:
             return render(request, 'authentication/register.html', {
                 'error': 'Only authorized administrator numbers can be registered as Admin.'
             })
