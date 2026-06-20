@@ -19,6 +19,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-voting-key')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,.onrender.com').split(',')
 
+# Trusted origins for CSRF verification over HTTPS (required for Render)
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com').split(',')
+
+
 # Security / Admin Config
 ADMIN_PHONE_NUMBER = os.environ.get('ADMIN_PHONE_NUMBER', '9876543210')
 
@@ -64,7 +68,28 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
+    }
+elif os.environ.get('RENDER'):
+    # SQLite using Render Persistent Disk (mount path: /var/data)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/var/data/db.sqlite3',
+        }
+    }
+else:
+    # Local SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend', 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
