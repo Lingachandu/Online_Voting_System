@@ -4,27 +4,69 @@
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 {% endblock %}
 {% block content %}
-<div class="container">
-    <h2>Verify OTP</h2>
-    {% if error %}<p class="error-text">❌ {{ error }}</p>{% endif %}
-    
-    {% if demo_otp %}
-    <div class="demo-otp-banner">
-        <div class="banner-header">
-            <span class="sms-icon">💬</span>
-            <span class="sms-title">Demo SMS Notification</span>
+<div class="container" style="max-width: 450px; text-align: center; padding: 2rem;">
+    {% if setup_required %}
+        <h2>🔐 Setup Authenticator</h2>
+        
+        <p class="info-text" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 1rem; margin-bottom: 1.5rem; line-height: 1.5;">
+            Scan the QR code below using an Authenticator app (such as <strong>Google Authenticator</strong> or <strong>Authy</strong>) on your mobile device, then enter the 6-digit code shown in the app.
+        </p>
+
+        <!-- Canvas for QR Code Rendering -->
+        <div style="background: white; padding: 1rem; display: inline-block; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 1.5rem;">
+            <canvas id="qr-code"></canvas>
         </div>
-        <p class="sms-text">Your Secure Online Voting verification OTP code is: <strong class="otp-highlight">{{ demo_otp }}</strong></p>
-    </div>
+    {% else %}
+        <h2>🔐 Two-Factor Authentication</h2>
+        
+        <p class="info-text" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 1rem; margin-bottom: 1.5rem; line-height: 1.5;">
+            Please enter the 6-digit verification code from your Authenticator app for mobile number <strong>{{ masked_phone }}</strong>.
+        </p>
     {% endif %}
 
-    <form method="POST">
+    {% if error %}<p class="error-text" style="margin-bottom: 1.5rem;">❌ {{ error }}</p>{% endif %}
+
+    <form method="POST" style="text-align: left;">
         {% csrf_token %}
-        <div class="form-group">
-            <label>Enter Code</label>
-            <input type="text" name="otp" required placeholder="Enter 6-digit OTP">
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Enter Verification Code</label>
+            <input type="text" name="otp" required placeholder="Enter 6-digit code" pattern="[0-9]{6}" maxlength="6" 
+                   style="letter-spacing: 0.2em; text-align: center; font-size: 1.2rem; font-weight: bold; width: 100%; padding: 0.75rem;">
         </div>
-        <button type="submit" class="btn">Verify OTP</button>
+        <button type="submit" class="btn" style="width: 100%; padding: 0.75rem; font-weight: bold;">
+            {% if setup_required %}Verify &amp; Register{% else %}Verify &amp; Login{% endif %}
+        </button>
     </form>
+
+    {% if not setup_required %}
+        <!-- Collapsible QR Code helper for returning users who lost setup -->
+        <details class="text-start mt-4" style="cursor: pointer; font-size: 0.9rem; color: var(--text-muted);">
+            <summary class="fw-bold text-decoration-underline" style="color: var(--primary);">Having trouble? Re-scan QR Code setup</summary>
+            <div class="text-center mt-3 p-3 bg-light rounded" style="cursor: default; border: 1px dashed #cbd5e1;">
+                <p class="small text-muted mb-3">If you need to setup or re-link your Authenticator app, scan the QR code below:</p>
+                <div style="background: white; padding: 1rem; display: inline-block; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
+                    <canvas id="qr-code"></canvas>
+                </div>
+            </div>
+        </details>
+    {% endif %}
 </div>
+
+<!-- QRious library loaded via CDN for generating client-side QR codes -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const totpUri = "{{ totp_uri|safe }}";
+        if (totpUri) {
+            new QRious({
+                element: document.getElementById('qr-code'),
+                value: totpUri,
+                size: 200,
+                background: 'white',
+                foreground: 'black',
+                level: 'H'
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -18,4 +18,4 @@ class Candidate(models.Model):
     party_symbol = models.CharField(max_length=50, blank=True, default="🗳️")
     party_color = models.CharField(max_length=7, blank=True, default="#4f46e5")
     votes_count = models.IntegerField(default=0)
-    photo_url = models.TextField(blank=True, null=True)  # Base64 or URL of candidate photo
+    photo_url = models.TextField(blank=True, null=True)

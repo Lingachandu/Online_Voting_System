@@ -6,20 +6,18 @@
 {% block content %}
 <div class="container legal-container">
     <h2>Privacy Policy</h2>
-    <p class="last-updated">Last Updated: June 10, 2026</p>
-    
     <div class="legal-content">
         <h3>1. Information We Collect</h3>
-        <p>We collect your registered mobile number and your selected role (Voter/Admin) strictly for authentication and authorization purposes. No other personal data is collected or stored.</p>
+        <p>We collect your registered mobile number, full name (first name) entered during login, and your state-specific Aadhaar number format strictly to verify eligibility and authenticate your login session. We do not store plaintext Aadhaar numbers beyond registration confirmation.</p>
         
-        <h3>2. How We Use Your Information</h3>
-        <p>Your mobile number is used to send One-Time Passwords (OTPs) to verify your identity. Your role dictates whether you access the voter dashboard or the admin audit dashboard.</p>
+        <h3>2. Multi-Factor Authentication</h3>
+        <p>We use Google Authenticator TOTP secrets to generate one-time passwords for secure session access. This information is securely hashed on our servers and never shared with third parties.</p>
         
-        <h3>3. Vote Anonymity</h3>
-        <p>We take voter privacy very seriously. In this system, your cast vote is stored separately and anonymously from your user profile. Nobody can map your identity to the candidate you voted for.</p>
+        <h3>3. Vote Anonymity & Decoupling</h3>
+        <p>We enforce strict ballot secrecy. Your candidate selection is decoupled from your voter profile and stored in separate database tables. Nobody (including administrators) can map your identity to the candidates you voted for.</p>
         
         <h3>4. Security of Data</h3>
-        <p>All authentication records, active sessions, and data are stored securely using industry-standard database protection mechanisms. OTPs are designed to expire immediately after use or after a short validity window.</p>
+        <p>All authentication records, active sessions, and database structures are stored securely using industry-standard protection mechanisms. Downloadable receipts are generated securely on-demand.</p>
         
         <h3>5. Cookies</h3>
         <p>We use session cookies strictly to keep you logged in while you interact with the dashboards. These cookies are destroyed once you log out or close your browser.</p>

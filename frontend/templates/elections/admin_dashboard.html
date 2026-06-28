@@ -2,15 +2,52 @@
 {% load static %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<style>
+    .btn-edit-outline {
+        background: transparent;
+        border: 1.5px solid var(--primary);
+        color: var(--primary);
+        box-shadow: none;
+    }
+    .btn-edit-outline:hover {
+        background: var(--primary);
+        color: white;
+    }
+    .btn-delete {
+        background: var(--danger);
+        color: white;
+        border: none;
+        box-shadow: none;
+    }
+    .btn-delete:hover {
+        background: #dc2626;
+        color: white;
+        transform: translateY(-1px);
+    }
+    .edit-election-panel {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 15px;
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="dashboard-wrapper">
+    <!-- Moving Admin Banner -->
+    <marquee scrollamount="6" style="background: darkblue; color: white; display: block; font-size: 1rem; font-weight: bold; padding: 10px 16px; border-bottom: 3px solid gold;">
+        🗳️ Admin Control Center — AP CM Election &nbsp;|&nbsp; TS CM Election &nbsp;|&nbsp; Chennai CM Election &nbsp;|&nbsp; Monitor votes in real-time. Integrity is paramount. 🏛️
+    </marquee>
     <div class="admin-top-bar">
         <div class="admin-top-inner">
             <div class="admin-top-title">
                 <span class="admin-live-dot"></span>
                 <h2>🗳️ Admin Control Center</h2>
                 <span class="last-updated-badge">Last updated: <span id="last-updated-time">--:--:--</span></span>
+                <span class="last-updated-badge" style="background: darkblue; color: white; padding: 4px 10px; border-radius: 6px; margin-left: 8px;">🕐 <span id="live-clock">--:--:--</span></span>
             </div>
             <div class="admin-top-meta">
                 <div class="meta-pill" id="meta-total-votes">
@@ -164,15 +201,65 @@
                                 <span class="badge danger-badge">🔴 Closed</span>
                             {% endif %}
                         </div>
-                        <div class="stat-action-group">
-                            <form method="POST" action="{% url 'toggle_election' item.election.id %}" class="toggle-status-form">
+                        <div class="stat-action-group d-flex align-items-center gap-2">
+                            <!-- Toggle status -->
+                            <form method="POST" action="{% url 'toggle_election' item.election.id %}" class="toggle-status-form m-0">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm {% if item.election.is_active %}btn-danger-outline{% else %}btn-success-outline{% endif %}">
-                                    {% if item.election.is_active %}Close Election{% else %}Open Election{% endif %}
+                                    {% if item.election.is_active %}Close{% else %}Open{% endif %}
                                 </button>
                             </form>
+
+                            <!-- Edit button -->
+                            <button type="button" class="btn btn-sm btn-edit-outline" onclick="toggleEditElectionForm('{{ item.election.id }}')">
+                                ✏️ Edit
+                            </button>
+
+                            <!-- Delete button -->
+                            <form method="POST" action="{% url 'delete_election' item.election.id %}" class="m-0" onsubmit="return confirm('WARNING: Deleting this election will permanently delete all votes and candidates associated with it. Are you sure?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-delete">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+
                             <span class="badge total-badge" id="total-badge-{{ item.election.id }}">Total: {{ item.total_votes }} votes</span>
                         </div>
+                    </div>
+
+                    <!-- Edit Election Form Panel (Collapsible) -->
+                    <div class="edit-election-panel" id="edit-panel-{{ item.election.id }}">
+                        <h5 class="fw-bold mb-3 text-dark">✏️ Edit Election Details</h5>
+                        <form method="POST" action="{% url 'edit_election' item.election.id %}" class="row g-3">
+                            {% csrf_token %}
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Election Title</label>
+                                <input type="text" name="title" class="form-control" required value="{{ item.election.title }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">State/Region</label>
+                                <select name="state" class="form-select" required>
+                                    <option value="ap" {% if item.election.state == 'ap' %}selected{% endif %}>Andhra Pradesh (AP)</option>
+                                    <option value="tg" {% if item.election.state == 'tg' %}selected{% endif %}>Telangana (TG)</option>
+                                    <option value="chennai" {% if item.election.state == 'chennai' %}selected{% endif %}>Chennai (TN)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Election Status</label>
+                                <select name="is_active" class="form-select" required>
+                                    <option value="True" {% if item.election.is_active %}selected{% endif %}>Active (Open)</option>
+                                    <option value="False" {% if not item.election.is_active %}selected{% endif %}>Inactive (Closed)</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Description</label>
+                                <textarea name="description" class="form-control" rows="2" placeholder="Election description...">{{ item.election.description }}</textarea>
+                            </div>
+                            <div class="col-12 mt-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-sm btn-primary" style="width:auto; border:none; background:var(--primary);">Save Changes</button>
+                                <button type="button" class="btn btn-sm btn-secondary-outline" style="width:auto; background:transparent; border:1px solid var(--text-muted); color:var(--text-muted);" onclick="toggleEditElectionForm('{{ item.election.id }}')">Cancel</button>
+                            </div>
+                        </form>
                     </div>
 
                     <!-- Winner Banner -->
@@ -278,6 +365,38 @@
         </section>
 
         <!-- ============================================================ -->
+        <!-- SECTION 1.5: CREATE ELECTION -->
+        <!-- ============================================================ -->
+        <section class="admin-section">
+            <h3 class="section-title">🏛️ Create New Election</h3>
+            <div class="card add-candidate-card shadow-sm border rounded-3 p-4">
+                <form method="POST" action="{% url 'create_election' %}" class="row g-3">
+                    {% csrf_token %}
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Election Title</label>
+                        <input type="text" name="title" class="form-control" required placeholder="e.g., Andhra Pradesh CM Election 2026">
+                    </div>
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">State/Region</label>
+                        <select name="state" class="form-select" required>
+                            <option value="" disabled selected>Select state...</option>
+                            <option value="ap">Andhra Pradesh (AP)</option>
+                            <option value="tg">Telangana (TG)</option>
+                            <option value="chennai">Chennai (TN)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size:0.75rem;">Description</label>
+                        <input type="text" name="description" class="form-control" placeholder="Brief election description...">
+                    </div>
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-primary px-4 py-2" style="width: auto; background: var(--primary); border: none;">➕ Create Election</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
         <!-- SECTION 2: ADD CANDIDATE -->
         <!-- ============================================================ -->
         <section class="admin-section">
@@ -326,36 +445,40 @@
         <!-- ============================================================ -->
         <section class="admin-section">
             <h3 class="section-title">📋 Voter Audit Log (Voter → Candidate Trail)</h3>
+            <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+                <input type="text" id="audit-search-input" class="form-control" placeholder="🔍 Search Voter ID, Mobile, or Aadhaar..." oninput="filterAuditLog()" style="max-width: 320px; border-radius: 8px;">
+                <select id="audit-state-filter" class="form-select" onchange="filterAuditLog()" style="max-width: 180px; border-radius: 8px;">
+                    <option value="">All States 🗺️</option>
+                    <option value="ap">🟢 AP</option>
+                    <option value="tg">🔴 TG</option>
+                    <option value="chennai">🔵 Chennai</option>
+                </select>
+                <button type="button" class="btn btn-success btn-sm px-3" onclick="downloadAuditCSV()" style="border-radius: 8px; font-weight: bold;">📥 Download CSV</button>
+            </div>
             <div class="table-wrapper">
                 <table class="audit-table">
                     <thead>
                         <tr>
-                            <th>Face</th>
                             <th>Voter ID</th>
+                            <th>Receipt Code</th>
                             <th>Mobile</th>
                             <th>Aadhaar</th>
                             <th>State</th>
                             <th>Election</th>
                             <th>Voted For</th>
                             <th>Party</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="audit-table-body">
                         {% if audit_votes %}
                             {% for vote in audit_votes %}
                             <tr>
-                                <td>
-                                    {% if vote.voter.face_image %}
-                                        <img src="{{ vote.voter.face_image }}" class="voter-face-thumbnail rounded-circle" alt="Face"
-                                             style="border: 1.5px solid var(--primary);" title="Face registered ✅">
-                                    {% else %}
-                                        <div class="voter-face-placeholder rounded-circle" style="width:32px;height:32px;border:1.5px dashed var(--border);font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;justify-content:center;">👤</div>
-                                    {% endif %}
-                                </td>
                                 <td class="font-mono font-semibold">{{ vote.voter.id }}</td>
-                                <td class="font-mono font-semibold">{{ vote.voter.phone_number }}</td>
-                                <td class="font-mono">{% if vote.voter.aadhaar_number %}{{ vote.voter.aadhaar_number }}{% else %}-{% endif %}</td>
+                                <td class="font-mono">
+                                    <span style="font-size: 0.85rem; color: var(--secondary); font-weight: bold; background: lightgray; padding: 3px 6px; border-radius: 4px;">SEC-VOTE-{{ vote.id }}-{{ vote.voter.id }}</span>
+                                </td>
+                                <td class="font-mono font-semibold">******{{ vote.voter.phone_number|slice:"6:" }}</td>
+                                <td class="font-mono">{% if vote.voter.aadhaar_number %}XXXX-XXXX-{{ vote.voter.aadhaar_number|slice:"8:" }}{% else %}-{% endif %}</td>
                                 <td>{% if vote.voter.state == 'ap' %}🟢 AP{% elif vote.voter.state == 'tg' %}🔴 TG{% else %}🔵 Chennai{% endif %}</td>
                                 <td>{{ vote.election.title }}</td>
                                 <td>
@@ -369,25 +492,30 @@
                                     </div>
                                 </td>
                                 <td><span class="badge party-badge">{{ vote.candidate.party_affinity }}</span></td>
-                                <td>
-                                    {% if vote.voter.face_image %}
-                                    <form method="POST" action="{% url 'reset_voter_face' vote.voter.id %}" style="display:inline;" onsubmit="return confirm('Reset face biometric for {{ vote.voter.phone_number }}?');">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-remove-cand" title="Reset Face Biometric" style="font-size:1rem;opacity:0.7;">🔄</button>
-                                    </form>
-                                    {% else %}
-                                    <span style="color:var(--text-muted);font-size:0.8rem;">—</span>
-                                    {% endif %}
-                                </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="9" class="text-center no-data">No votes cast yet. The audit database is empty.</td>
+                                <td colspan="7" class="text-center no-data">No votes cast yet. The audit database is empty.</td>
                             </tr>
                         {% endif %}
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 4: RECEIPT AUDIT / VERIFICATION TOOL -->
+        <!-- ============================================================ -->
+        <section class="admin-section">
+            <h3 class="section-title">🔍 Secure Receipt Verification Tool</h3>
+            <div class="card p-4 shadow-sm border rounded-3">
+                <p class="text-muted small">Input any voter's secure receipt code (e.g. <code>SEC-VOTE-5-12</code>) to audit and verify that it matches a valid registered vote in our system database.</p>
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <input type="text" id="receipt-code-input" class="form-control" placeholder="Enter Receipt Code (e.g. SEC-VOTE-1-2)..." style="max-width: 380px; border-radius: 8px;">
+                    <button type="button" class="btn btn-primary" onclick="verifyReceipt()" style="width: auto; background: var(--primary); border: none; border-radius: 8px; font-weight: bold; padding: 10px 24px;">Verify receipt</button>
+                </div>
+                <div id="receipt-verify-result" class="mt-3" style="display: none;"></div>
             </div>
         </section>
     </div>
@@ -397,29 +525,41 @@
 <!-- INLINE JS: Real-time chart colors (no template filters needed) -->
 <!-- ============================================================ -->
 <script>
+function toggleEditElectionForm(electionId) {
+    const panel = document.getElementById('edit-panel-' + electionId);
+    if (panel) {
+        if (panel.style.display === 'none' || panel.style.display === '') {
+            panel.style.display = 'block';
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+}
+
 // Donut chart colors mapped to political parties
 const PARTY_COLORS = {
-    'TDP': '#facc15',           // Yellow
-    'YSRCP': '#2563eb',         // Blue
-    'Janasena Party': '#f8fafc', // White / Off-white
-    'INC': '#dc2626',           // Red
-    'BRS': '#db2777',           // Pink
-    'TVK': '#ffffff',           // White
-    'DMK': '#ea580c',           // Rising Sun Orange/Red
+    'TDP': '#eab308',
+    'YSRCP': '#0284c7',
+    'Janasena Party': '#dc2626',
+    'INC': '#059669',
+    'BRS': '#db2777',
+    'TVK': '#ca8a04',
+    'DMK': '#ea580c',
 };
 
 function getCandidateColor(cand, index) {
+    if (cand.color) {
+        return cand.color;
+    }
     const party = cand.party || cand.party_affinity;
     if (party && PARTY_COLORS[party]) {
         return PARTY_COLORS[party];
     }
-    const fallbacks = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+    const fallbacks = ['#2563eb', '#16a34a', '#ea580c', '#dc2626', '#9333ea', '#06b6d4'];
     return fallbacks[index % fallbacks.length];
 }
 
-// Build initial donut arcs via JS to avoid Django template filter complexity
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Draw donut charts from server-rendered data ---
     const electionsData = {{ elections_json|safe }};
     electionsData.forEach(election => {
         drawDonut(election.election_id, election.candidates, election.total_votes);
@@ -427,12 +567,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStateBadge(election.state, election);
     });
 
-    // Update state cards with winner lines from initial data
     updateStateWinnerLines(electionsData);
 
-    // Start live polling every 30 seconds
-    setInterval(fetchLiveStats, 30000);
-    // Initial fetch immediately after load to sync
+    setInterval(fetchLiveStats, 5000);
     setTimeout(fetchLiveStats, 1500);
 });
 
@@ -440,18 +577,14 @@ function drawDonut(electionId, candidates, totalVotes) {
     const svg = document.getElementById('donut-' + electionId);
     if (!svg) return;
 
-    // Remove existing arcs
     svg.querySelectorAll('.donut-arc').forEach(a => a.remove());
 
     const totalNumEl = svg.querySelector('.donut-center-num');
     if (totalNumEl) totalNumEl.textContent = totalVotes;
 
-    if (totalVotes === 0) {
-        // Ensure gray placeholder visible
-        return;
-    }
+    if (totalVotes === 0) return;
 
-    const circumference = 2 * Math.PI * 70; // ≈ 439.82
+    const circumference = 2 * Math.PI * 70;
     let offset = 0;
 
     candidates.forEach((cand, i) => {
@@ -476,29 +609,18 @@ function drawDonut(electionId, candidates, totalVotes) {
         svg.insertBefore(arc, svg.querySelector('.donut-center-num'));
         offset += dashLen;
 
-        // Color the legend dot
         const dot = document.getElementById('ldot-' + cand.id);
         if (dot) {
             dot.style.background = color;
-            if (color === '#ffffff' || color === '#f8fafc') {
-                dot.style.border = '1px solid #cbd5e1';
-            } else {
-                dot.style.border = 'none';
-            }
+            dot.style.border = (color === '#ffffff' || color === '#f8fafc') ? '1px solid #cbd5e1' : 'none';
         }
 
-        // Color the progress bar fill
         const fill = document.getElementById('cand-fill-' + cand.id);
         if (fill) {
             fill.style.background = `linear-gradient(to right, ${color}, ${color}cc)`;
-            if (color === '#ffffff' || color === '#f8fafc') {
-                fill.style.border = '1px solid #cbd5e1';
-            } else {
-                fill.style.border = 'none';
-            }
+            fill.style.border = (color === '#ffffff' || color === '#f8fafc') ? '1px solid #cbd5e1' : 'none';
         }
         
-        // Color the pct badge
         const badge = document.getElementById('cand-pct-' + cand.id);
         if (badge) {
             badge.style.background = color;
@@ -512,7 +634,6 @@ function drawDonut(electionId, candidates, totalVotes) {
         }
     });
 }
-
 
 function updateWinnerBox(electionId, data) {
     const box = document.getElementById('winner-box-' + electionId);
@@ -572,17 +693,15 @@ async function fetchLiveStats() {
     const btn = document.getElementById('btn-refresh-now');
     if (btn) btn.classList.add('spinning');
     try {
-        const resp = await fetch('/api/live-stats/');
+        const resp = await fetch('/api/live-stats/?_t=' + new Date().getTime());
         if (!resp.ok) return;
         const data = await resp.json();
 
-        // Update header stats
         safeText('header-total-votes', data.total_votes_system);
         safeText('header-total-voters', data.total_voters);
         safeText('header-turnout', data.turnout_percent + '%');
         safeText('last-updated-time', data.timestamp);
 
-        // Update state cards
         const stateMap = data.state_data;
         for (const [code, info] of Object.entries(stateMap)) {
             safeText(code + '-votes-cast', info.votes_cast);
@@ -592,21 +711,14 @@ async function fetchLiveStats() {
             if (fill) fill.style.width = info.turnout_percent + '%';
         }
 
-        // Update election charts
         data.elections.forEach(election => {
-            // Update total badge
             const badge = document.getElementById('total-badge-' + election.election_id);
             if (badge) badge.textContent = 'Total: ' + election.total_votes + ' votes';
 
-            // Redraw donut
             drawDonut(election.election_id, election.candidates, election.total_votes);
-
-            // Update winner box
             updateWinnerBox(election.election_id, election);
 
-            // Update candidate cards
             election.candidates.forEach(cand => {
-                safeText('cand-votes-' + cand.id, '');
                 const votesEl = document.getElementById('cand-votes-' + cand.id);
                 if (votesEl) {
                     votesEl.innerHTML = `<span class="cand-vote-num">${cand.votes}</span> <span class="cand-vote-label">votes</span> <span class="cand-pct-badge">${cand.percent}%</span>`;
@@ -614,17 +726,49 @@ async function fetchLiveStats() {
                 const fill = document.getElementById('cand-fill-' + cand.id);
                 if (fill) fill.style.width = cand.percent + '%';
 
-                // Update legend pct
                 const legendPct = document.getElementById('legend-pct-' + cand.id);
                 if (legendPct) legendPct.textContent = cand.percent + '%';
             });
 
-            // Update legend
             updateDonutLegend(election.election_id, election.candidates);
         });
 
-        // Update state winner lines
         updateStateWinnerLines(data.elections);
+
+        const tbody = document.getElementById('audit-table-body');
+        if (tbody && data.audit_votes) {
+            if (data.audit_votes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center no-data">No votes cast yet. The audit database is empty.</td></tr>`;
+            } else {
+                tbody.innerHTML = data.audit_votes.map(vote => {
+                    const stateLabel = vote.state === 'ap' ? '🟢 AP' : (vote.state === 'tg' ? '🔴 TG' : '🔵 Chennai');
+                    const candidatePhotoHtml = vote.candidate_photo_url
+                        ? `<img src="${vote.candidate_photo_url}" class="rounded-circle border border-light-subtle shadow-sm" style="width: 32px; height: 32px; object-fit: cover;" alt="${vote.candidate_name}">`
+                        : `<span class="fs-4">${vote.party_symbol}</span>`;
+
+                    return `
+                        <tr>
+                            <td class="font-mono font-semibold">${vote.voter_id}</td>
+                            <td class="font-mono">
+                                <span style="font-size: 0.85rem; color: var(--secondary); font-weight: bold; background: lightgray; padding: 3px 6px; border-radius: 4px;">SEC-VOTE-${vote.vote_id}-${vote.voter_id}</span>
+                            </td>
+                            <td class="font-mono font-semibold">${vote.phone_number}</td>
+                            <td class="font-mono">${vote.aadhaar_number || '-'}</td>
+                            <td>${stateLabel}</td>
+                            <td>${vote.election_title}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    ${candidatePhotoHtml}
+                                    <strong>${vote.candidate_name}</strong>
+                                </div>
+                            </td>
+                            <td><span class="badge party-badge">${vote.party_affinity}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            filterAuditLog();
+        }
 
     } catch(err) {
         console.warn('Live stats fetch error:', err);
@@ -656,6 +800,136 @@ function updateDonutLegend(electionId, candidates) {
 function safeText(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
+}
+
+// Live clock
+(function liveClock() {
+    function tick() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2,'0');
+        const m = String(now.getMinutes()).padStart(2,'0');
+        const s = String(now.getSeconds()).padStart(2,'0');
+        const el = document.getElementById('live-clock');
+        if (el) el.textContent = h + ':' + m + ':' + s;
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+
+// Download audit log as CSV
+function downloadAuditCSV() {
+    const rows = document.querySelectorAll('#audit-table-body tr');
+    let csv = 'Voter ID,Receipt Code,Mobile,Aadhaar,State,Election,Voted For,Party\n';
+    rows.forEach(row => {
+        if (row.querySelector('.no-data')) return;
+        if (row.style.display === 'none') return;
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 8) return;
+        const rowData = [
+            cells[0].textContent.trim(),
+            cells[1].textContent.trim(),
+            cells[2].textContent.trim(),
+            cells[3].textContent.trim(),
+            cells[4].textContent.trim(),
+            cells[5].textContent.trim(),
+            cells[6].textContent.trim(),
+            cells[7].textContent.trim()
+        ].map(v => '"' + v.replace(/"/g, '""') + '"').join(',');
+        csv += rowData + '\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'voter_audit_log.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function filterAuditLog() {
+    const query = document.getElementById('audit-search-input').value.toLowerCase();
+    const stateFilter = document.getElementById('audit-state-filter').value.toLowerCase();
+    const rows = document.querySelectorAll('#audit-table-body tr');
+    
+    rows.forEach(row => {
+        if (row.querySelector('.no-data')) return;
+        
+        const voterId = row.cells[0] ? row.cells[0].textContent.toLowerCase() : '';
+        const receiptCode = row.cells[1] ? row.cells[1].textContent.toLowerCase() : '';
+        const mobile = row.cells[2] ? row.cells[2].textContent.toLowerCase() : '';
+        const aadhaar = row.cells[3] ? row.cells[3].textContent.toLowerCase() : '';
+        const stateText = row.cells[4] ? row.cells[4].textContent.toLowerCase() : '';
+        
+        const matchesQuery = voterId.includes(query) || receiptCode.includes(query) || mobile.includes(query) || aadhaar.includes(query);
+        const matchesState = !stateFilter || stateText.includes(stateFilter);
+        
+        row.style.display = (matchesQuery && matchesState) ? '' : 'none';
+    });
+}
+
+async function verifyReceipt() {
+    const code = document.getElementById('receipt-code-input').value.trim();
+    const resultBox = document.getElementById('receipt-verify-result');
+    if (!code) {
+        alert('Please enter a receipt code.');
+        return;
+    }
+    
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<span class="text-muted">Verifying audit signatures... ⏳</span>';
+    
+    try {
+        const resp = await fetch('/api/verify-receipt/?code=' + encodeURIComponent(code));
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+            resultBox.innerHTML = `
+                <div class="alert alert-success d-flex align-items-center gap-2 p-3 rounded" style="border-left: 5px solid green;">
+                    <span class="fs-4">✅</span>
+                    <div>
+                        <h5 class="h6 fw-bold mb-1">Receipt Verified & Authenticated</h5>
+                        <p class="small mb-0 text-dark">
+                            <strong>Vote ID:</strong> ${data.vote_id} | <strong>Voter ID:</strong> ${data.voter_id}<br>
+                            <strong>State:</strong> ${data.state.toUpperCase()}<br>
+                            <strong>Election:</strong> ${data.election_title}<br>
+                            <strong>Voted For:</strong> ${data.candidate_name} (${data.party_affinity}) ${data.party_symbol}
+                        </p>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultBox.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center gap-2 p-3 rounded" style="border-left: 5px solid red;">
+                    <span class="fs-4">❌</span>
+                    <div>
+                        <h5 class="h6 fw-bold mb-1">Verification Failed</h5>
+                        <p class="small mb-0 text-dark">${data.error || 'The receipt code is invalid or has been altered.'}</p>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (err) {
+        console.error('Error verifying receipt:', err);
+        resultBox.innerHTML = `
+            <div class="alert alert-danger p-3 rounded">
+                <strong>Error:</strong> Network/Server communication error.
+            </div>
+        `;
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 </script>
 {% endblock %}

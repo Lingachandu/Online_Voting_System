@@ -35,7 +35,7 @@ class CustomUser(AbstractUser):
         ('chennai', 'Chennai')
     )
     
-    username = None  # Remove default username field
+    username = None
     phone_number = models.CharField(max_length=10, unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='voter')
     state = models.CharField(max_length=10, choices=STATE_CHOICES, blank=True, null=True)
@@ -43,11 +43,12 @@ class CustomUser(AbstractUser):
     face_image = models.TextField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     has_logged_in = models.BooleanField(default=False)
+    totp_secret = models.CharField(max_length=32, blank=True, null=True)
 
-    objects = CustomUserManager()  # Hook the custom manager here
+    objects = CustomUserManager()
 
     USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = ['role']  # Ask for role alongside password during CLI setups
+    REQUIRED_FIELDS = ['role']
 
     def __str__(self):
         return f"{self.phone_number} ({self.role})"

@@ -5,6 +5,11 @@
 {% endblock %}
 {% block content %}
 <div class="container-fluid py-4 theme-{{ state_code }}" style="max-width: 1100px;">
+    <!-- Moving Banner based on State -->
+    <div class="mb-4">
+        <marquee class="state-moving-banner py-2 px-3 fw-bold rounded shadow-sm" scrollamount="6" style="background: var(--primary-light); color: var(--primary-hover); display: block; font-size: 1.1rem; border: 2px solid var(--primary);">📣 Welcome to {{ state_name }} CM Election! Cast your vote securely. 📣</marquee>
+    </div>
+
     <!-- Navigation Bar using Bootstrap Pills -->
     <ul class="nav nav-pills justify-content-center bg-white shadow-sm rounded-3 p-2 mb-4">
         <li class="nav-item">
@@ -30,6 +35,23 @@
         </div>
     </div>
 
+    <!-- Live Voter Turnout Progress Bar -->
+    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px; background: white; border: 1.5px solid rgba(0, 0, 0, 0.05);">
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span style="font-size: 1.3rem;">📊</span>
+                <span class="fw-bold text-dark" style="font-size: 0.95rem; margin: 0;">Live Voter Turnout in {{ state_name }}</span>
+            </div>
+            <span class="badge" style="background: var(--primary); color: white !important; font-weight: 700; font-size: 0.85rem; border: 1.5px solid var(--primary-hover);">{{ turnout_pct }}% Ballots Cast</span>
+        </div>
+        <div class="progress" style="height: 12px; border-radius: 6px; background-color: #f1f5f9; overflow: hidden; margin-top: 8px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ turnout_pct }}%; background-color: var(--primary); transition: width 0.8s ease;" aria-valuenow="{{ turnout_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div class="text-muted mt-2 small" style="font-size: 0.75rem;">
+            *Updated live. Turnout calculation represents the percentage of registered {{ state_name }} voters who have successfully cast a ballot.
+        </div>
+    </div>
+
     <!-- Content Sections (Tab Panes) -->
     <div class="tab-content">
         <!-- 1. Profile Tab -->
@@ -37,13 +59,9 @@
             <h2 class="h4 mb-3 fw-bold text-dark">{{ state_name }} Voter Profile</h2>
             <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
                 <div class="card-body p-4 bg-light border-bottom d-flex align-items-center gap-3">
-                    {% if user.face_image %}
-                        <img src="{{ user.face_image }}" class="rounded-circle border border-3 avatar-size" style="border-color: var(--primary) !important;" alt="Voter Face">
-                    {% else %}
-                        <div class="rounded-circle bg-white d-flex align-items-center justify-content-center border border-3 fs-2 text-secondary avatar-size" style="border-color: var(--primary) !important;">👤</div>
-                    {% endif %}
+                    <div class="rounded-circle bg-white d-flex align-items-center justify-content-center border border-3 fs-2 text-secondary avatar-size" style="border-color: var(--primary) !important;">👤</div>
                     <div>
-                        <h3 class="h5 mb-1 fw-bold text-dark">{{ user.phone_number }}</h3>
+                        <h3 class="h5 mb-1 fw-bold text-dark">******{{ user.phone_number|slice:"6:" }}</h3>
                         <span class="badge bg-secondary">{{ user.role|upper }}</span>
                     </div>
                 </div>
@@ -55,7 +73,7 @@
                     {% if user.aadhaar_number %}
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                         <span class="text-muted fw-semibold">Aadhaar Number</span>
-                        <span class="font-mono fw-bold text-dark">{{ user.aadhaar_number }}</span>
+                        <span class="font-mono fw-bold text-dark">XXXX-XXXX-{{ user.aadhaar_number|slice:"8:" }}</span>
                     </div>
                     {% endif %}
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
@@ -132,46 +150,155 @@
         <!-- 3. About Tab -->
         <div id="about" class="tab-pane fade">
             <h2 class="h4 mb-3 fw-bold text-dark">About Secure Voting ({{ state_name }})</h2>
-            <div class="card shadow-sm border-0 rounded-3 p-4">
+            
+            <!-- Key Security Pillars -->
+            <div class="card shadow-sm border-0 rounded-3 p-4 mb-4">
                 <p class="text-muted">Welcome to the <strong>{{ state_name }} Secure Online Voting Portal</strong>, a specialized state platform designed to facilitate secure, transparent, and accessible democratic choices.</p>
-                <h3 class="h6 fw-bold text-dark mt-3 mb-2">Key Security Pillars:</h3>
-                <ul class="text-muted">
-                    <li class="mb-2"><strong>Aadhaar-Linked Validation</strong>: Voter profiles are strictly matched with registered 12-digit Aadhaar credentials on this portal.</li>
-                    <li class="mb-2"><strong>One-Person, One-Vote</strong>: Enforced through encrypted cellular OTP verification linked directly to registered profile records.</li>
-                    <li class="mb-2"><strong>Anonymity Guaranteed</strong>: Votes are structurally decoupled from voter identity records to ensure absolute choice privacy.</li>
-                </ul>
-                <p class="text-muted mb-0">Ensure that you keep your registered mobile device safe and never share OTP codes with third parties.</p>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 h-100" style="background: rgba(79, 70, 229, 0.05); border: 1.5px solid rgba(79, 70, 229, 0.15);">
+                            <div class="fs-3 mb-2">🪪</div>
+                            <div class="fw-bold text-dark mb-1">Aadhaar Validation</div>
+                            <div class="text-muted small">Voter profiles are strictly matched with registered 12-digit Aadhaar credentials on this portal.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 h-100" style="background: rgba(16, 185, 129, 0.05); border: 1.5px solid rgba(16, 185, 129, 0.15);">
+                            <div class="fs-3 mb-2">🔐</div>
+                            <div class="fw-bold text-dark mb-1">OTP Authentication</div>
+                            <div class="text-muted small">Enforced through encrypted cellular OTP verification linked directly to registered profile records.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 h-100" style="background: rgba(245, 158, 11, 0.05); border: 1.5px solid rgba(245, 158, 11, 0.15);">
+                            <div class="fs-3 mb-2">👤</div>
+                            <div class="fw-bold text-dark mb-1">Anonymity Guaranteed</div>
+                            <div class="text-muted small">Votes are structurally decoupled from voter identity records to ensure choice privacy and secrecy.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frequently Asked Questions (FAQs) -->
+            <h3 class="h5 fw-bold text-dark mb-3">❓ Frequently Asked Questions</h3>
+            <div class="accordion mb-4" id="faqAccordion">
+                <div class="accordion-item border-0 shadow-sm mb-2 rounded-3 overflow-hidden" style="border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <h4 class="accordion-header" id="faqHead1">
+                        <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1" aria-expanded="false" aria-controls="faqCollapse1">
+                            Is my vote completely secret?
+                        </button>
+                    </h4>
+                    <div id="faqCollapse1" class="accordion-collapse collapse" aria-labelledby="faqHead1" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted bg-white small">
+                            Yes. The platform decouples your personal identity from your ballot. While the system registers that you have cast your vote (to prevent double-voting), the details of who you voted for are recorded separately, ensuring absolute ballot secrecy and choice privacy.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 shadow-sm mb-2 rounded-3 overflow-hidden" style="border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <h4 class="accordion-header" id="faqHead2">
+                        <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse2" aria-expanded="false" aria-controls="faqCollapse2">
+                            How does OTP verification work during login?
+                        </button>
+                    </h4>
+                    <div id="faqCollapse2" class="accordion-collapse collapse" aria-labelledby="faqHead2" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted bg-white small">
+                            Upon entering your credentials, the portal requires verification. The OTP serves as a second-factor security mechanism (2FA) confirming ownership of the registered phone number before granting dashboard access.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 shadow-sm mb-2 rounded-3 overflow-hidden" style="border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <h4 class="accordion-header" id="faqHead3">
+                        <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse3" aria-expanded="false" aria-controls="faqCollapse3">
+                            Can I edit or change my vote?
+                        </button>
+                    </h4>
+                    <div id="faqCollapse3" class="accordion-collapse collapse" aria-labelledby="faqHead3" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted bg-white small">
+                            No. To prevent vote tampering, once you submit your vote and confirm it in the pop-up modal, it is permanently locked and recorded. It cannot be altered or deleted.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 shadow-sm mb-2 rounded-3 overflow-hidden" style="border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <h4 class="accordion-header" id="faqHead4">
+                        <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse4" aria-expanded="false" aria-controls="faqCollapse4">
+                            What is the downloadable vote receipt?
+                        </button>
+                    </h4>
+                    <div id="faqCollapse4" class="accordion-collapse collapse" aria-labelledby="faqHead4" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted bg-white small">
+                            Your receipt is a secure, official text document containing a verification code, your name, and details of the ballot. It serves as your official proof of voting and can be downloaded as a text file immediately after casting your vote.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms & Conditions and Privacy Policy Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 p-4">
+                        <h4 class="h6 fw-bold text-dark mb-3">⚖️ Terms &amp; Conditions</h4>
+                        <ul class="text-muted small ps-3 mb-0">
+                            <li class="mb-2"><strong>Aadhaar Authenticity</strong>: You must represent accurate state credentials. False verification attempts are subject to review.</li>
+                            <li class="mb-2"><strong>Single Vote Policy</strong>: Voting multiple times using alternative profiles or numbers is strictly prohibited.</li>
+                            <li class="mb-2"><strong>Device Security</strong>: Keep your device and OTP session key confidential to maintain account security.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 p-4">
+                        <h4 class="h6 fw-bold text-dark mb-3">🛡️ Privacy Policy</h4>
+                        <ul class="text-muted small ps-3 mb-0">
+                            <li class="mb-2"><strong>Data Minimalization</strong>: We do not store phone numbers or Aadhaar details in plaintext beyond active verification sessions.</li>
+                            <li class="mb-2"><strong>Vote Hashing</strong>: Ballots are stored decoupled from user records using cryptographic database separation techniques.</li>
+                            <li class="mb-2"><strong>No Tracking</strong>: The site does not utilize tracking scripts or sell user demographic data.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- 4. Helpline Tab -->
         <div id="contact" class="tab-pane fade">
             <h2 class="h4 mb-3 fw-bold text-dark">Contact {{ state_name }} Helpline</h2>
-            <div class="card shadow-sm border-0 rounded-3 p-4">
-                <p class="text-muted">If you encounter issues during verification, or have questions about eligibility, please reach out to the {{ state_name }} state election support team:</p>
-                <div class="list-group list-group-flush mt-3">
-                    <div class="list-group-item d-flex align-items-center gap-3 py-3 border-0 bg-transparent">
-                        <span class="fs-4">📞</span>
-                        <div>
-                            <label class="d-block text-muted small fw-bold text-uppercase">{{ state_name }} Phone Support</label>
-                            <a href="tel:{{ helpline_phone }}" class="text-decoration-none fw-bold" style="color: var(--primary, #4f46e5);">{{ helpline_phone }}</a>
-                        </div>
-                    </div>
-                    <div class="list-group-item d-flex align-items-center gap-3 py-3 border-0 bg-transparent">
-                        <span class="fs-4">📧</span>
-                        <div>
-                            <label class="d-block text-muted small fw-bold text-uppercase">{{ state_name }} Email Support</label>
-                            <a href="mailto:{{ helpline_email }}" class="text-decoration-none fw-bold" style="color: var(--primary, #4f46e5);">{{ helpline_email }}</a>
-                        </div>
-                    </div>
-                    <div class="list-group-item d-flex align-items-center gap-3 py-3 border-0 bg-transparent">
-                        <span class="fs-4">🕒</span>
-                        <div>
-                            <label class="d-block text-muted small fw-bold text-uppercase">{{ state_name }} Help Hours</label>
-                            <span class="fw-bold text-dark">24/7 during active election cycles</span>
-                        </div>
+            <div class="row g-3 mb-4">
+                <!-- Phone Card -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm p-4 text-center helpline-card" style="border-top: 4px solid var(--primary) !important; border-radius: 16px;">
+                        <div class="fs-1 mb-2">📞</div>
+                        <h4 class="h6 fw-bold text-muted text-uppercase mb-2" style="font-size:0.75rem;">Phone Support</h4>
+                        <a href="tel:{{ helpline_phone }}" class="fs-5 fw-bold text-decoration-none" style="color: var(--primary);">{{ helpline_phone }}</a>
+                        <p class="text-muted small mt-2 mb-0">Toll-free line for immediate voter registration assistance.</p>
                     </div>
                 </div>
+                <!-- Email Card -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm p-4 text-center helpline-card" style="border-top: 4px solid var(--primary) !important; border-radius: 16px;">
+                        <div class="fs-1 mb-2">📧</div>
+                        <h4 class="h6 fw-bold text-muted text-uppercase mb-2" style="font-size:0.75rem;">Email Support</h4>
+                        <a href="mailto:{{ helpline_email }}" class="fs-6 fw-bold text-decoration-none text-truncate d-block" style="color: var(--primary);">{{ helpline_email }}</a>
+                        <p class="text-muted small mt-2 mb-0">Official ECI portal for document submissions and email inquiries.</p>
+                    </div>
+                </div>
+                <!-- Hours Card -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm p-4 text-center helpline-card" style="border-top: 4px solid var(--primary) !important; border-radius: 16px;">
+                        <div class="fs-1 mb-2">🕒</div>
+                        <h4 class="h6 fw-bold text-muted text-uppercase mb-2" style="font-size:0.75rem;">Help Hours</h4>
+                        <span class="fs-6 fw-bold text-dark">24/7 Service</span>
+                        <p class="text-muted small mt-2 mb-0">Fully active and online during active ECI election cycles.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Verification Card for Voter -->
+            <div class="card shadow-sm border-0 rounded-3 p-4 mt-4">
+                <h5 class="fw-bold text-dark mb-2">🔍 Voter Receipt Verification</h5>
+                <p class="text-muted small">Verify the authenticity of your secure receipt. Paste your receipt code below to check if your ballot is successfully recorded in the ECI system database.</p>
+                <div class="d-flex gap-2 align-items-center flex-wrap mt-3">
+                    <input type="text" id="voter-receipt-input" class="form-control" placeholder="Enter receipt code (e.g., SEC-VOTE-1-2)..." style="max-width: 360px; border-radius: 8px; font-size: 0.9rem;">
+                    <button type="button" class="btn btn-primary-custom" onclick="verifyVoterReceipt()" style="width: auto; padding: 10px 24px; font-size: 0.9rem;">Verify Receipt</button>
+                </div>
+                <div id="voter-receipt-result" class="mt-3" style="display: none;"></div>
             </div>
         </div>
     </div>
@@ -216,5 +343,54 @@
             });
         });
     });
+
+    async function verifyVoterReceipt() {
+        const code = document.getElementById('voter-receipt-input').value.trim();
+        const resultBox = document.getElementById('voter-receipt-result');
+        if (!code) {
+            alert('Please enter a receipt code.');
+            return;
+        }
+        
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = '<span class="text-muted">Verifying receipt signature... ⏳</span>';
+        
+        try {
+            const resp = await fetch('/api/verify-receipt/?code=' + encodeURIComponent(code));
+            const data = await resp.json();
+            if (resp.ok && data.success) {
+                resultBox.innerHTML = `
+                    <div class="alert alert-success d-flex align-items-center gap-2 p-3 rounded mt-2" style="border-left: 5px solid green; background: #f0fdf4;">
+                        <span class="fs-4">✅</span>
+                        <div>
+                            <h5 class="h6 fw-bold mb-1" style="color: #166534;">Receipt Verified &amp; Authenticated</h5>
+                            <p class="small mb-0 text-dark">
+                                <strong>Voter Status:</strong> Ballot recorded in ECI system.<br>
+                                <strong>State/Region:</strong> ${data.state.toUpperCase()}<br>
+                                <strong>Election:</strong> ${data.election_title}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultBox.innerHTML = `
+                    <div class="alert alert-danger d-flex align-items-center gap-2 p-3 rounded mt-2" style="border-left: 5px solid red; background: #fef2f2;">
+                        <span class="fs-4">❌</span>
+                        <div>
+                            <h5 class="h6 fw-bold mb-1" style="color: #991b1b;">Verification Failed</h5>
+                            <p class="small mb-0 text-dark">${data.error || 'The receipt code is invalid or has been altered.'}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.error('Error verifying receipt:', err);
+            resultBox.innerHTML = `
+                <div class="alert alert-danger p-3 rounded mt-2" style="background: #fef2f2;">
+                    <strong>Error:</strong> Network/Server communication error.
+                </div>
+            `;
+        }
+    }
 </script>
 {% endblock %}

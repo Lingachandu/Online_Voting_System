@@ -8,4 +8,5 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('terms/', views.terms_view, name='terms'),
     path('privacy/', views.privacy_view, name='privacy'),
+    path('send-otp-direct/', views.send_otp_direct_view, name='send_otp_direct'),
 ]
