@@ -467,18 +467,20 @@
                             <th>Election</th>
                             <th>Voted For</th>
                             <th>Party</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="audit-table-body">
                         {% if audit_votes %}
                             {% for vote in audit_votes %}
                             <tr>
+                                {% if request.user.is_superuser %}
                                 <td class="font-mono font-semibold">{{ vote.voter.id }}</td>
                                 <td class="font-mono">
                                     <span style="font-size: 0.85rem; color: var(--secondary); font-weight: bold; background: lightgray; padding: 3px 6px; border-radius: 4px;">SEC-VOTE-{{ vote.id }}-{{ vote.voter.id }}</span>
                                 </td>
-                                <td class="font-mono font-semibold">******{{ vote.voter.phone_number|slice:"6:" }}</td>
-                                <td class="font-mono">{% if vote.voter.aadhaar_number %}XXXX-XXXX-{{ vote.voter.aadhaar_number|slice:"8:" }}{% else %}-{% endif %}</td>
+                                <td class="font-mono font-semibold">{{ vote.voter.phone_number }}</td>
+                                <td class="font-mono">{% if vote.voter.aadhaar_number %}{{ vote.voter.aadhaar_number }}{% else %}-{% endif %}</td>
                                 <td>{% if vote.voter.state == 'ap' %}🟢 AP{% elif vote.voter.state == 'tg' %}🔴 TG{% else %}🔵 Chennai{% endif %}</td>
                                 <td>{{ vote.election.title }}</td>
                                 <td>
@@ -492,11 +494,31 @@
                                     </div>
                                 </td>
                                 <td><span class="badge party-badge">{{ vote.candidate.party_affinity }}</span></td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-danger px-2 py-1" style="font-size: 0.75rem; border: none; border-radius: 4px; background: var(--danger); color: white;" onclick="deleteVote('{{ vote.id }}')">🗑️ Delete</button>
+                                    </div>
+                                </td>
+                                {% else %}
+                                <td class="font-mono font-semibold">[Hidden]</td>
+                                <td class="font-mono">
+                                    <span style="font-size: 0.85rem; color: var(--secondary); font-weight: bold; background: lightgray; padding: 3px 6px; border-radius: 4px;">SEC-VOTE-[Hidden]</span>
+                                </td>
+                                <td class="font-mono font-semibold">[Protected]</td>
+                                <td class="font-mono">[Protected]</td>
+                                <td>{% if vote.voter.state == 'ap' %}🟢 AP{% elif vote.voter.state == 'tg' %}🔴 TG{% else %}🔵 Chennai{% endif %}</td>
+                                <td>{{ vote.election.title }}</td>
+                                <td>
+                                    <span class="text-muted"><i>[Protected/Anonymous]</i></span>
+                                </td>
+                                <td><span class="badge party-badge">[Protected]</span></td>
+                                <td><span class="text-muted">-</span></td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="7" class="text-center no-data">No votes cast yet. The audit database is empty.</td>
+                                <td colspan="9" class="text-center no-data">No votes cast yet. The audit database is empty.</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -738,19 +760,45 @@ async function fetchLiveStats() {
         const tbody = document.getElementById('audit-table-body');
         if (tbody && data.audit_votes) {
             if (data.audit_votes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center no-data">No votes cast yet. The audit database is empty.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center no-data">No votes cast yet. The audit database is empty.</td></tr>`;
             } else {
                 tbody.innerHTML = data.audit_votes.map(vote => {
                     const stateLabel = vote.state === 'ap' ? '🟢 AP' : (vote.state === 'tg' ? '🔴 TG' : '🔵 Chennai');
-                    const candidatePhotoHtml = vote.candidate_photo_url
-                        ? `<img src="${vote.candidate_photo_url}" class="rounded-circle border border-light-subtle shadow-sm" style="width: 32px; height: 32px; object-fit: cover;" alt="${vote.candidate_name}">`
-                        : `<span class="fs-4">${vote.party_symbol}</span>`;
+                    
+                    let candidatePhotoHtml;
+                    if (vote.candidate_photo_url) {
+                        candidatePhotoHtml = `<img src="${vote.candidate_photo_url}" class="rounded-circle border border-light-subtle shadow-sm" style="width: 32px; height: 32px; object-fit: cover;" alt="${vote.candidate_name}">`;
+                    } else if (vote.party_symbol === "🔒") {
+                        candidatePhotoHtml = `<span>🔒</span>`;
+                    } else {
+                        candidatePhotoHtml = `<span class="fs-4">${vote.party_symbol}</span>`;
+                    }
+
+                    let candidateLabel;
+                    if (vote.candidate_name === "[Protected/Anonymous]") {
+                        candidateLabel = `<span class="text-muted"><i>[Protected/Anonymous]</i></span>`;
+                    } else {
+                        candidateLabel = `<strong>${vote.candidate_name}</strong>`;
+                    }
+
+                    let actionsHtml = '';
+                    if (data.is_superuser && vote.vote_id !== "[Hidden]" && vote.voter_id !== "[Hidden]") {
+                        actionsHtml = `
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-sm btn-danger px-2 py-1" style="font-size: 0.75rem; border: none; border-radius: 4px; background: var(--danger); color: white;" onclick="deleteVote(${vote.vote_id})">🗑️ Delete</button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        actionsHtml = `<td><span class="text-muted">-</span></td>`;
+                    }
 
                     return `
                         <tr>
                             <td class="font-mono font-semibold">${vote.voter_id}</td>
                             <td class="font-mono">
-                                <span style="font-size: 0.85rem; color: var(--secondary); font-weight: bold; background: lightgray; padding: 3px 6px; border-radius: 4px;">SEC-VOTE-${vote.vote_id}-${vote.voter_id}</span>
+                                <span style="font-size: 0.85rem; color: var(--secondary); font-weight: bold; background: lightgray; padding: 3px 6px; border-radius: 4px;">${vote.receipt_code}</span>
                             </td>
                             <td class="font-mono font-semibold">${vote.phone_number}</td>
                             <td class="font-mono">${vote.aadhaar_number || '-'}</td>
@@ -759,10 +807,11 @@ async function fetchLiveStats() {
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     ${candidatePhotoHtml}
-                                    <strong>${vote.candidate_name}</strong>
+                                    ${candidateLabel}
                                 </div>
                             </td>
                             <td><span class="badge party-badge">${vote.party_affinity}</span></td>
+                            ${actionsHtml}
                         </tr>
                     `;
                 }).join('');
@@ -914,6 +963,32 @@ async function verifyReceipt() {
                 <strong>Error:</strong> Network/Server communication error.
             </div>
         `;
+    }
+}
+
+async function deleteVote(voteId) {
+    if (!confirm('Are you sure you want to delete this vote?')) {
+        return;
+    }
+    
+    try {
+        const resp = await fetch(`/vote/remove/${voteId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+            alert(data.message);
+            fetchLiveStats();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to delete vote.'));
+        }
+    } catch (err) {
+        console.error('Error deleting vote:', err);
+        alert('Error communicating with the server.');
     }
 }
 

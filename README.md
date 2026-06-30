@@ -12,13 +12,15 @@ A secure, state-filtered Online Voting System built with **Django** (Python) and
 - **OTP Login & QR Authenticator**: Secure two-factor authentication (2FA) via TOTP. Users scan a QR code with Google Authenticator or Authy to log in.
 - **Dynamic Name Capture**: Voter's full name is captured at login, saved to their profile, and dynamically printed on official receipts.
 - **Double-Voting Prevention**: Database-level constraints prevent any voter from voting more than once.
-- **PII Data Masking**: Voter phone numbers (`******1234`) and Aadhaar numbers (`XXXX-XXXX-6789`) are masked on all Voter dashboards, Admin logs, and JSON API payloads to ensure GDPR/security compliance.
+- **Strict Voter Privacy & Masking**: Voter phone numbers, Aadhaar numbers, and candidate selections are protected. Public interfaces and general administrators see only masked values (e.g., `[Protected]` or `🔒`). Only authorized Django **Superusers** can view unmasked voting audit logs to maintain data privacy.
 - **Live Turnout Analytics**: State-specific voter turnout progress bars calculated directly from database records.
 - **End-to-End Verifiability**:
   - **Voter Receipt Download**: Download a secure transaction text receipt (`SEC-VOTE-[VoteID]-[VoterID]`).
-  - **Public Receipt Verifier**: A voter-facing tool on the Helpline tab to verify if their ballot has been safely registered in the ECI registry (hiding candidate choice to prevent vote-coercion).
-  - **Admin Receipt Verifier**: Admin tool to verify receipt transactions for auditing.
-- **Live Admin Dashboard**: Real-time vote tallies, interactive donut charts (corrected color mappings for TVK/Janasena), candidate management, and dynamic voter audit logs with CSV export.
+  - **Public Receipt Verifier**: A voter-facing tool on the Helpline tab to verify if their ballot has been safely registered in the ECI registry (hiding candidate choice to prevent vote-coercion, unless queried by the voter themselves or a superuser).
+  - **Admin Receipt Verifier**: Auditing tool for checking receipt transactions.
+- **Live Admin Dashboard**: Real-time vote tallies, interactive donut charts (corrected color mappings for TVK/Janasena), candidate management, and dynamic voter audit logs.
+- **Administrative Operations**: Authorized administrators can delete individual votes or remove voter accounts (which automatically decrements candidate vote counts) to manage data and election cycles.
+- **Advanced Django Admin**: Custom `VoteAdmin` dashboard hides voter identities and candidate details from non-superusers while enforcing read-only settings.
 
 ---
 
@@ -123,10 +125,13 @@ Visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 | Package | Version | Purpose |
 |---------|---------|---------|
 | `Django` | 6.0.6 | Core Web Framework |
+| `asgiref` | 3.11.1 | ASGI Server / helper library for Django |
+| `sqlparse` | 0.5.5 | SQL parser for Django database operations |
+| `tzdata` | 2026.2 | Timezone database for Python/Django |
 | `pyotp` | 2.10.0 | TOTP 2FA code generation |
 | `whitenoise` | 6.12.0 | High-performance static files hosting |
 | `dj-database-url` | 3.1.2 | Database URL config (production) |
-| `gunicorn` | 26.0.0 | Production WGSI Server |
+| `gunicorn` | 26.0.0 | Production WSGI Server |
 | `psycopg2-binary` | 2.9.12 | PostgreSQL database adapter |
 
 ---

@@ -1,53 +1,267 @@
 /* AUTH.CSS — Login, OTP, Register pages */
 
 /* Auth page center alignment */
-.auth-page .main-content { align-items: center; justify-content: center; }
+.auth-page .main-content {
+    align-items: center;
+    justify-content: center;
+}
 
 /* Form groups */
-.form-group               { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
-.form-group label         { font-size: 0.9rem; font-weight: 600; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .form-group input,
-.form-group select        { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 1rem; color: var(--text-main); background: #f8fafc; box-sizing: border-box; transition: var(--transition); }
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text-main);
+    background: #f8fafc;
+    box-sizing: border-box;
+    transition: var(--transition);
+}
+
 .form-group input:focus,
-.form-group select:focus  { outline: none; border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(79,70,229,0.1); }
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
 
 /* Checkbox */
-.terms-checkbox-group     { flex-direction: row !important; align-items: flex-start; gap: 12px; margin-top: 5px; margin-bottom: 25px; }
-.terms-checkbox-group input[type="checkbox"] { width: auto !important; margin-top: 4px; cursor: pointer; accent-color: var(--primary); transform: scale(1.15); }
-.checkbox-label           { font-size: 0.95rem !important; font-weight: 500 !important; color: var(--text-muted) !important; text-transform: none !important; letter-spacing: normal !important; line-height: 1.4; cursor: pointer; }
-.checkbox-label a         { color: var(--primary); text-decoration: none; font-weight: 600; border-bottom: 1.5px solid transparent; transition: var(--transition); }
-.checkbox-label a:hover   { color: var(--primary-hover); border-bottom-color: var(--primary-hover); }
+.terms-checkbox-group {
+    flex-direction: row !important;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 5px;
+    margin-bottom: 25px;
+}
+
+.terms-checkbox-group input[type="checkbox"] {
+    width: auto !important;
+    margin-top: 4px;
+    cursor: pointer;
+    accent-color: var(--primary);
+    transform: scale(1.15);
+}
+
+.checkbox-label {
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    color: var(--text-muted) !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.checkbox-label a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1.5px solid transparent;
+    transition: var(--transition);
+}
+
+.checkbox-label a:hover {
+    color: var(--primary-hover);
+    border-bottom-color: var(--primary-hover);
+}
 
 /* OTP info banner */
-.demo-otp-banner  { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 24px; }
-.banner-header    { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.sms-icon         { font-size: 1.2rem; }
-.sms-title        { font-size: 0.95rem; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px; }
-.sms-text         { font-size: 0.95rem; color: #1e3a8a; margin: 0; line-height: 1.5; }
-.otp-highlight    { background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 1.05rem; font-family: monospace; font-weight: 700; border: 1px solid #93c5fd; }
+.demo-otp-banner {
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.banner-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.sms-icon {
+    font-size: 1.2rem;
+}
+
+.sms-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e40af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sms-text {
+    font-size: 0.95rem;
+    color: #1e3a8a;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.otp-highlight {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 1.05rem;
+    font-family: monospace;
+    font-weight: 700;
+    border: 1px solid #93c5fd;
+}
 
 /* Error message */
-.error-text { background: #fef2f2; color: var(--danger); border: 1.5px solid #fecaca; padding: 12px 16px; border-radius: var(--radius); font-weight: 600; font-size: 0.95rem; margin-bottom: 24px; }
+.error-text {
+    background: #fef2f2;
+    color: var(--danger);
+    border: 1.5px solid #fecaca;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+}
 
 /* Legal pages */
-.legal-container  { max-width: 700px !important; }
-.last-updated     { font-size: 0.85rem; color: var(--text-muted); margin-top: -15px; margin-bottom: 24px; font-style: italic; }
-.legal-content    { max-height: 400px; overflow-y: auto; padding-right: 15px; margin-bottom: 30px; border-bottom: 1px solid var(--border); }
-.legal-content::-webkit-scrollbar       { width: 6px; }
-.legal-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-.legal-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.legal-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-.legal-content h3 { font-size: 1.1rem; font-weight: 700; color: var(--secondary); margin-top: 20px; margin-bottom: 8px; }
-.legal-content p  { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 15px; }
-.text-center-btn  { text-align: center; }
+.legal-container {
+    max-width: 700px !important;
+}
+
+.last-updated {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: -15px;
+    margin-bottom: 24px;
+    font-style: italic;
+}
+
+.legal-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 15px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border);
+}
+
+.legal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.legal-content::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.legal-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.legal-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.legal-content h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+.legal-content p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.text-center-btn {
+    text-align: center;
+}
 
 /* Contact page */
-.contact-card     { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; box-shadow: var(--shadow); }
-.contact-intro    { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px; }
-.contact-details  { display: flex; flex-direction: column; gap: 20px; }
-.contact-item     { display: flex; align-items: center; gap: 15px; }
-.contact-icon     { font-size: 1.5rem; background: var(--background); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-.contact-info     { display: flex; flex-direction: column; gap: 2px; }
-.contact-info label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.contact-link     { color: var(--primary); text-decoration: none; font-weight: 700; font-size: 1.05rem; transition: var(--transition); }
-.contact-link:hover { color: var(--primary-hover); text-decoration: underline; }
+.contact-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: var(--shadow);
+}
+
+.contact-intro {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.contact-icon {
+    font-size: 1.5rem;
+    background: var(--background);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.contact-info label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.contact-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.05rem;
+    transition: var(--transition);
+}
+
+.contact-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}

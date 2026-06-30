@@ -557,23 +557,46 @@ def live_stats_api(request):
 
     audit_list = []
     audit_votes = Vote.objects.select_related('voter', 'election', 'candidate').order_by('-id')[:50]
+    
+    is_superuser = request.user.is_superuser
+    
     for vote in audit_votes:
         phone = vote.voter.phone_number
-        masked_phone = f"******{phone[-4:]}" if phone else ""
         aadhaar = vote.voter.aadhaar_number
-        masked_aadhaar = f"XXXX-XXXX-{aadhaar[-4:]}" if aadhaar else ""
+        
+        if is_superuser:
+            phone_val = phone if phone else ""
+            aadhaar_val = aadhaar if aadhaar else "-"
+            voter_id_val = vote.voter.id
+            vote_id_val = vote.id
+            receipt_code = f"SEC-VOTE-{vote.id}-{vote.voter.id}"
+            candidate_name = vote.candidate.name
+            party_symbol = vote.candidate.party_symbol
+            party_affinity = vote.candidate.party_affinity
+            candidate_photo_url = vote.candidate.photo_url or ''
+        else:
+            phone_val = "[Protected]"
+            aadhaar_val = "[Protected]"
+            voter_id_val = "[Hidden]"
+            vote_id_val = "[Hidden]"
+            receipt_code = "SEC-VOTE-[Hidden]"
+            candidate_name = "[Protected/Anonymous]"
+            party_symbol = "🔒"
+            party_affinity = "[Protected]"
+            candidate_photo_url = ''
 
         audit_list.append({
-            'vote_id': vote.id,
-            'voter_id': vote.voter.id,
-            'phone_number': masked_phone,
-            'aadhaar_number': masked_aadhaar,
+            'vote_id': vote_id_val,
+            'voter_id': voter_id_val,
+            'receipt_code': receipt_code,
+            'phone_number': phone_val,
+            'aadhaar_number': aadhaar_val,
             'state': vote.voter.state or '',
             'election_title': vote.election.title,
-            'candidate_name': vote.candidate.name,
-            'party_symbol': vote.candidate.party_symbol,
-            'party_affinity': vote.candidate.party_affinity,
-            'candidate_photo_url': vote.candidate.photo_url or '',
+            'candidate_name': candidate_name,
+            'party_symbol': party_symbol,
+            'party_affinity': party_affinity,
+            'candidate_photo_url': candidate_photo_url,
         })
 
     return JsonResponse({
@@ -583,6 +606,7 @@ def live_stats_api(request):
         'total_voters': total_voters,
         'turnout_percent': turnout_percent,
         'audit_votes': audit_list,
+        'is_superuser': is_superuser,
         'timestamp': __import__('datetime').datetime.now().strftime('%H:%M:%S'),
     })
 
@@ -611,24 +635,75 @@ def verify_receipt_api(request):
             'election_title': vote.election.title,
         }
         
-        # If user is admin, add candidate details for audit trails
-        if request.user.role == 'admin':
+        # Access control based on user status
+        if request.user.is_superuser:
             data.update({
                 'phone_number': vote.voter.phone_number,
                 'candidate_name': vote.candidate.name,
                 'party_affinity': vote.candidate.party_affinity,
                 'party_symbol': vote.candidate.party_symbol,
                 'is_admin': True,
+                'is_superuser': True,
+            })
+        elif vote.voter == request.user:
+            data.update({
+                'phone_number': vote.voter.phone_number,
+                'candidate_name': vote.candidate.name,
+                'party_affinity': vote.candidate.party_affinity,
+                'party_symbol': vote.candidate.party_symbol,
+                'is_admin': False,
+                'is_superuser': False,
             })
         else:
-            # For voter, show it's successfully cast & mask the voter's own phone
-            phone = vote.voter.phone_number
-            masked_phone = f"******{phone[-4:]}" if phone else ""
             data.update({
-                'phone_number': masked_phone,
+                'phone_number': "[Protected]",
+                'candidate_name': "[Protected/Anonymous]",
+                'party_affinity': "[Protected]",
+                'party_symbol': "🔒",
                 'is_admin': False,
+                'is_superuser': False,
             })
             
         return JsonResponse(data)
     except (ValueError, Vote.DoesNotExist):
         return JsonResponse({'success': False, 'error': 'Receipt code not found in voting registry.'})
+
+
+@login_required
+def remove_vote(request, vote_id):
+    if request.user.role != 'admin':
+        return JsonResponse({'success': False, 'error': 'Only administrators are authorized to perform this action.'}, status=403)
+        
+    if request.method == "POST":
+        from apps.voting.models import Vote
+        vote = get_object_or_404(Vote, id=vote_id)
+        candidate = vote.candidate
+        if candidate.votes_count > 0:
+            candidate.votes_count -= 1
+            candidate.save()
+        vote.delete()
+        return JsonResponse({'success': True, 'message': 'Vote has been successfully removed.'})
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
+
+
+@login_required
+def remove_voter(request, voter_id):
+    if request.user.role != 'admin':
+        messages.error(request, "Only administrators are authorized to perform this action.")
+        return redirect('voter_dashboard')
+        
+    if request.method == "POST":
+        voter = get_object_or_404(CustomUser, id=voter_id, role='voter')
+        from apps.voting.models import Vote
+        votes = Vote.objects.filter(voter=voter)
+        for vote in votes:
+            candidate = vote.candidate
+            if candidate.votes_count > 0:
+                candidate.votes_count -= 1
+                candidate.save()
+        voter_phone = voter.phone_number
+        voter.delete()
+        messages.success(request, f"Voter account {voter_phone} and their votes have been successfully removed.")
+        
+    return redirect('admin_dashboard')
