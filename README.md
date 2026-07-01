@@ -14,6 +14,8 @@ A secure, state-filtered Online Voting System built with **Django** (Python) and
 - **Double-Voting Prevention**: Database-level constraints prevent any voter from voting more than once.
 - **Strict Voter Privacy & Masking**: Voter phone numbers, Aadhaar numbers, and candidate selections are protected. Public interfaces and general administrators see only masked values (e.g., `[Protected]` or `🔒`). Only authorized Django **Superusers** can view unmasked voting audit logs to maintain data privacy.
 - **Live Turnout Analytics**: State-specific voter turnout progress bars calculated directly from database records.
+- **Birthday-Style Confetti Blast**: Interactive confetti explosion animation (using canvas-confetti) upon successful vote submission, with automatic redirection to the voting list tab to display voter confirmation and downloadable receipt.
+- **Fast Developer Testing Mode**: Allows developers/testers to use the mock verification code `000000` for OTP validation when `DEBUG=True` in settings.
 - **End-to-End Verifiability**:
   - **Voter Receipt Download**: Download a secure transaction text receipt (`SEC-VOTE-[VoteID]-[VoterID]`).
   - **Public Receipt Verifier**: A voter-facing tool on the Helpline tab to verify if their ballot has been safely registered in the ECI registry (hiding candidate choice to prevent vote-coercion, unless queried by the voter themselves or a superuser).
@@ -122,6 +124,7 @@ Visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 ## 📦 Core Dependencies
 
+### Backend Dependencies
 | Package | Version | Purpose |
 |---------|---------|---------|
 | `Django` | 6.0.6 | Core Web Framework |
@@ -134,6 +137,13 @@ Visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 | `gunicorn` | 26.0.0 | Production WSGI Server |
 | `psycopg2-binary` | 2.9.12 | PostgreSQL database adapter |
 
+### Frontend CDN Dependencies
+| Library | Version | Purpose |
+|---------|---------|---------|
+| `canvas-confetti` | 1.9.3 | Birthday-style celebratory confetti blast animation |
+| `qrious` | 4.0.2 | Client-side QR code generator for 2FA authenticator setup |
+| `bootstrap` | 5.3.3 | UI Layout and elements styling |
+
 ---
 
 ## 📝 Design & Architecture Notes
@@ -141,3 +151,4 @@ Visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 - **Aadhaar Prefix Verification**: Registration checks state codes based on Aadhaar digits (`123` for AP, `456` for TG, `789` for Chennai).
 - **Voter Privacy Secrecy**: The system is designed to completely decouple user information from vote entries. The `verify-receipt` API ensures public queries never leak candidate selection details.
 - **SQLite defaults**: SQLite is configured by default for easy local testing.
+- **Debug OTP Shortcut**: Entering `000000` bypasses TOTP code generation for easier testing.

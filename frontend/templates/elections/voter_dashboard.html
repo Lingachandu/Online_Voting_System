@@ -304,9 +304,32 @@
     </div>
 </div>
 
-<!-- Tab-switching & Dynamic Submit Button Coloring -->
+<!-- Load Canvas Confetti Library for Celebratory Blast -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<!-- Tab-switching & Dynamic Submit Button Coloring & Confetti Blast -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Check if voter successfully voted (detected from Django success message in base.html)
+        const successMessages = document.querySelectorAll(".message-banner.success");
+        let isVoteSuccess = false;
+        successMessages.forEach(msg => {
+            if (msg.textContent.includes("successfully") || msg.textContent.includes("cast")) {
+                isVoteSuccess = true;
+            }
+        });
+
+        if (isVoteSuccess) {
+            // Automatically switch to the voting-list tab so the user sees the confirmation and receipt
+            const votingTabEl = document.querySelector('.nav-link[href="#voting-list"]');
+            if (votingTabEl) {
+                const tab = new bootstrap.Tab(votingTabEl);
+                tab.show();
+            }
+            // Trigger celebration confetti
+            triggerConfettiCelebration();
+        }
+
         // Listen to changes on candidate radio options to dynamically style the submit button
         const candidateRadios = document.querySelectorAll('input[name="candidate"]');
         candidateRadios.forEach(radio => {
@@ -344,6 +367,45 @@
         });
     });
 
+    function triggerConfettiCelebration() {
+        // Immediate side cannons
+        confetti({
+            particleCount: 80,
+            spread: 60,
+            origin: { x: 0, y: 0.8 },
+            angle: 60,
+            zIndex: 10000
+        });
+        confetti({
+            particleCount: 80,
+            spread: 60,
+            origin: { x: 1, y: 0.8 },
+            angle: 120,
+            zIndex: 10000
+        });
+
+        // Shower blasts over a 2.5 second duration
+        const duration = 2.5 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+
     async function verifyVoterReceipt() {
         const code = document.getElementById('voter-receipt-input').value.trim();
         const resultBox = document.getElementById('voter-receipt-result');
@@ -368,7 +430,7 @@
                                 <strong>Voter Status:</strong> Ballot recorded in ECI system.<br>
                                 <strong>State/Region:</strong> ${data.state.toUpperCase()}<br>
                                 <strong>Election:</strong> ${data.election_title}
-                            </p>
+                             </p>
                         </div>
                     </div>
                 `;

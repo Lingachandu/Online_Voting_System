@@ -1,3 +1,4 @@
+# Python dependencies for Secure Online Voting System
 Django==6.0.6
 asgiref==3.11.1
 sqlparse==0.5.5
