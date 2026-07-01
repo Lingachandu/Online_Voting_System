@@ -1,0 +1,127 @@
+/* State-specific theme variables */
+.theme-ap {
+    --primary: #15803d;
+    --primary-hover: #166534;
+    --primary-light: #dcfce7;
+    --shadow-color: rgba(21, 128, 61, 0.2);
+}
+.theme-tg {
+    --primary: #db2777;
+    --primary-hover: #be185d;
+    --primary-light: #fce7f3;
+    --shadow-color: rgba(219, 39, 119, 0.2);
+}
+.theme-chennai {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #dbeafe;
+    --shadow-color: rgba(37, 99, 235, 0.2);
+}
+
+/* Premium Dashboard Navigation */
+.nav-pills {
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+}
+.nav-pills .nav-link {
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    padding: 10px 22px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.nav-pills .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.03) !important;
+}
+.nav-pills .nav-link.active {
+    background-color: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 4px 14px var(--shadow-color) !important;
+}
+
+/* National Integrity Warning Banner */
+.national-warning-banner {
+    background: linear-gradient(135deg, rgba(255, 251, 235, 0.8) 0%, rgba(254, 243, 199, 0.8) 100%) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(245, 158, 11, 0.2) !important;
+    border-left: 6px solid orange !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.3s ease !important;
+}
+.national-warning-banner:hover {
+    transform: translateY(-1px) scale(1.002);
+}
+
+/* Profile Details Card */
+.avatar-size {
+    width: 90px !important;
+    height: 90px !important;
+    object-fit: cover !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.card {
+    border-radius: 16px !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+.bg-light.border-bottom {
+    background-color: rgba(0, 0, 0, 0.01) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Premium Candidate Cards Grid */
+.candidate-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    border-radius: 16px !important;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02) !important;
+}
+.candidate-card img {
+    transition: transform 0.3s ease !important;
+}
+.candidate-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--candidate-color, var(--primary)) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.02) !important;
+}
+.candidate-card:hover img {
+    transform: scale(1.06);
+}
+
+/* Selected State highlight */
+.candidate-card:has(input[type="radio"]:checked) {
+    background-color: var(--primary-light) !important;
+    background: linear-gradient(145deg, white, var(--primary-light)) !important;
+    border-color: var(--candidate-color, var(--primary)) !important;
+    box-shadow: 0 0 0 1px var(--candidate-color, var(--primary)), 0 10px 20px -5px var(--shadow-color) !important;
+}
+
+/* Stylized Submit button */
+.btn-primary-custom {
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover)) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 700 !important;
+    padding: 12px 28px !important;
+    border-radius: 30px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px var(--shadow-color) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-color) !important;
+}
+
+/* Helpline cards micro-animation */
+.helpline-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.helpline-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+}
