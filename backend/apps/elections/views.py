@@ -109,8 +109,21 @@ def voter_dashboard(request):
         return redirect('voter_dashboard_ap')
     elif request.user.state == 'tg':
         return redirect('voter_dashboard_tg')
-    else:
+    elif request.user.state == 'chennai':
         return redirect('voter_dashboard_chennai')
+    else:
+        return render(request, 'elections/voter_dashboard.html', {
+            'elections': [],
+            'voted_elections': [],
+            'voted_count': 0,
+            'state_code': 'unknown',
+            'state_name': 'Unknown State',
+            'aadhaar_prefix': 'None',
+            'helpline_phone': 'N/A',
+            'helpline_email': 'support@eci.gov.in',
+            'turnout_pct': 0.0,
+            'profile_error': 'Your voter profile does not have a valid state assigned. Please contact the administrator.'
+        })
 
 @login_required
 def voter_dashboard_ap(request):

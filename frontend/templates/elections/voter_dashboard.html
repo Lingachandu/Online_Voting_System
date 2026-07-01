@@ -26,6 +26,16 @@
         </li>
     </ul>
 
+    {% if profile_error %}
+    <div class="alert alert-danger p-3 mb-4 d-flex align-items-center gap-3" style="border-radius: 16px; border-left: 5px solid #dc2626; background-color: #fef2f2;">
+        <div class="fs-1 text-danger select-none">⚠️</div>
+        <div>
+            <h4 class="h6 fw-bold text-danger mb-1">Voter Profile Error</h4>
+            <p class="text-muted small mb-0">{{ profile_error }}</p>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- National Integrity Warning Banner -->
     <div class="national-warning-banner p-3 mb-4 d-flex align-items-center gap-3">
         <div class="fs-1 text-warning select-none">⚠️</div>
