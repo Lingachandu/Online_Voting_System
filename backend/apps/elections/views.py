@@ -30,21 +30,21 @@ def seed_default_data():
     c_naidu.party_affinity = "TDP"
     c_naidu.party_symbol = "🚲"
     c_naidu.party_color = "#eab308"
-    c_naidu.photo_url = "/static/candidates/images/chandra_babu_naidu.jpg"
+    c_naidu.photo_url = "/static/elections/images/chandra_babu_naidu.jpg"
     c_naidu.save()
     
     c_jagan, _ = Candidate.objects.get_or_create(election=ap_election, name="Jagan")
     c_jagan.party_affinity = "YSRCP"
     c_jagan.party_symbol = "🪭"
     c_jagan.party_color = "#0284c7"
-    c_jagan.photo_url = "/static/candidates/images/jagan.jpg"
+    c_jagan.photo_url = "/static/elections/images/jagan.jpg"
     c_jagan.save()
     
     c_pawan, _ = Candidate.objects.get_or_create(election=ap_election, name="Pawan Kalyan (Janasena)")
     c_pawan.party_affinity = "Janasena Party"
     c_pawan.party_symbol = "🥃"
     c_pawan.party_color = "#dc2626"
-    c_pawan.photo_url = "/static/candidates/images/pawan_kalyan.jpg"
+    c_pawan.photo_url = "/static/elections/images/pawan_kalyan.jpg"
     c_pawan.save()
 
     tg_election, created = Election.objects.get_or_create(
@@ -63,14 +63,14 @@ def seed_default_data():
     c_revanth.party_affinity = "INC"
     c_revanth.party_symbol = "✋"
     c_revanth.party_color = "#059669"
-    c_revanth.photo_url = "/static/candidates/images/revanth_reddy.png"
+    c_revanth.photo_url = "/static/elections/images/revanth_reddy.png"
     c_revanth.save()
     
     c_kcr, _ = Candidate.objects.get_or_create(election=tg_election, name="KCR")
     c_kcr.party_affinity = "BRS"
     c_kcr.party_symbol = "🚗"
     c_kcr.party_color = "#db2777"
-    c_kcr.photo_url = "/static/candidates/images/kcr.jpg"
+    c_kcr.photo_url = "/static/elections/images/kcr.jpg"
     c_kcr.save()
 
     chennai_election, created = Election.objects.get_or_create(
@@ -89,14 +89,14 @@ def seed_default_data():
     c_vijay.party_affinity = "TVK"
     c_vijay.party_symbol = "🦁"
     c_vijay.party_color = "#ca8a04"
-    c_vijay.photo_url = "/static/candidates/images/vijay.jpg"
+    c_vijay.photo_url = "/static/elections/images/vijay.jpg"
     c_vijay.save()
     
     c_stalin, _ = Candidate.objects.get_or_create(election=chennai_election, name="Stalin")
     c_stalin.party_affinity = "DMK"
     c_stalin.party_symbol = "☀️"
     c_stalin.party_color = "#ea580c"
-    c_stalin.photo_url = "/static/candidates/images/stalin.jpg"
+    c_stalin.photo_url = "/static/elections/images/stalin.jpg"
     c_stalin.save()
 
 
