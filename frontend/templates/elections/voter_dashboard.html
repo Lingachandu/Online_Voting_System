@@ -52,10 +52,10 @@
                 <span style="font-size: 1.3rem;">📊</span>
                 <span class="fw-bold text-dark" style="font-size: 0.95rem; margin: 0;">Live Voter Turnout in {{ state_name }}</span>
             </div>
-            <span class="badge" style="background: var(--primary); color: white !important; font-weight: 700; font-size: 0.85rem; border: 1.5px solid var(--primary-hover);">{{ turnout_pct }}% Ballots Cast</span>
+            <span class="badge" id="voter-turnout-badge" style="background: var(--primary); color: white !important; font-weight: 700; font-size: 0.85rem; border: 1.5px solid var(--primary-hover);">{{ turnout_pct }}% Ballots Cast</span>
         </div>
         <div class="progress" style="height: 12px; border-radius: 6px; background-color: #f1f5f9; overflow: hidden; margin-top: 8px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ turnout_pct }}%; background-color: var(--primary); transition: width 0.8s ease;" aria-valuenow="{{ turnout_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar progress-bar-striped progress-bar-animated" id="voter-turnout-bar" role="progressbar" style="width: {{ turnout_pct }}%; background-color: var(--primary); transition: width 0.8s ease;" aria-valuenow="{{ turnout_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
         <div class="text-muted mt-2 small" style="font-size: 0.75rem;">
             *Updated live. Turnout calculation represents the percentage of registered {{ state_name }} voters who have successfully cast a ballot.
@@ -88,7 +88,7 @@
                     {% endif %}
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                         <span class="text-muted fw-semibold">Elections Participated</span>
-                        <span class="fw-bold text-dark">{{ voted_count }}</span>
+                        <span class="fw-bold text-dark" id="profile-voted-count">{{ voted_count }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center py-2">
                         <span class="text-muted fw-semibold">Region/State</span>
@@ -101,6 +101,7 @@
         <!-- 2. Voting List Tab -->
         <div id="voting-list" class="tab-pane fade">
             <h2 class="h4 mb-3 fw-bold text-dark">Active {{ state_name }} CM Elections</h2>
+            <div id="elections-container">
             {% if elections %}
                 {% for election in elections %}
                 <div class="card shadow-sm border-0 rounded-3 mb-4">
@@ -155,6 +156,7 @@
             {% else %}
                 <p class="text-center text-muted py-5">No active elections available for {{ state_name }} at this time.</p>
             {% endif %}
+            </div>
         </div>
 
         <!-- 3. About Tab -->
@@ -319,6 +321,161 @@
 
 <!-- Tab-switching & Dynamic Submit Button Coloring & Confetti Blast -->
 <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function attachRadioListeners() {
+        const candidateRadios = document.querySelectorAll('input[name="candidate"]');
+        candidateRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const color = this.getAttribute('data-color') || 'var(--primary)';
+                
+                // Find submit button in the closest form
+                const submitBtn = this.closest('form').querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.style.setProperty('background-color', color, 'important');
+                    submitBtn.style.setProperty('border-color', color, 'important');
+                    submitBtn.style.setProperty('color', '#ffffff', 'important');
+                    submitBtn.style.setProperty('box-shadow', `0 4px 12px ${color}40`, 'important');
+                }
+            });
+        });
+    }
+
+    const stateName = "{{ state_name }}";
+
+    async function pollVoterDashboard() {
+        try {
+            const resp = await fetch('/api/voter-elections/?_t=' + new Date().getTime());
+            if (!resp.ok) return;
+            const data = await resp.json();
+
+            // 1. Update Turnout Badge & Bar
+            const turnoutBadge = document.getElementById('voter-turnout-badge');
+            if (turnoutBadge) {
+                turnoutBadge.textContent = data.turnout_pct + '% Ballots Cast';
+            }
+            const turnoutBar = document.getElementById('voter-turnout-bar');
+            if (turnoutBar) {
+                turnoutBar.style.width = data.turnout_pct + '%';
+                turnoutBar.setAttribute('aria-valuenow', data.turnout_pct);
+            }
+
+            // 2. Update Profile Tab voted count
+            const votedCountEl = document.getElementById('profile-voted-count');
+            if (votedCountEl) {
+                votedCountEl.textContent = data.voted_count;
+            }
+
+            // 3. Update Elections Container
+            const container = document.getElementById('elections-container');
+            if (container) {
+                if (!data.elections || data.elections.length === 0) {
+                    container.innerHTML = `<p class="text-center text-muted py-5">No active elections available for ${stateName} at this time.</p>`;
+                } else {
+                    let stateHash = data.elections.map(e => `${e.id}:${e.is_active}:${e.has_voted}`).join('|');
+                    if (container.dataset.stateHash !== stateHash) {
+                        container.dataset.stateHash = stateHash;
+                        
+                        let html = '';
+                        data.elections.forEach(election => {
+                            html += `
+                            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                                <div class="card-body p-4 border-bottom">
+                                    <h3 class="h5 fw-bold text-dark mb-1">${election.title}</h3>
+                                    <p class="text-muted small mb-0">${election.description}</p>
+                                </div>
+                                <div class="card-body p-4">
+                            `;
+                            
+                            if (election.has_voted) {
+                                html += `
+                                    <div class="alert alert-success d-flex align-items-center justify-content-between flex-wrap gap-2 m-0" role="alert">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span>✓</span>
+                                            <strong class="success-message">Vote Casted Successfully</strong>
+                                        </div>
+                                        <a href="/download-receipt/${election.id}/" class="btn btn-success btn-sm py-1 px-3 d-flex align-items-center gap-1" style="font-weight: 600;">
+                                            📥 Download Receipt
+                                        </a>
+                                    </div>
+                                `;
+                            } else if (!election.is_active) {
+                                html += `
+                                    <div class="alert alert-danger d-flex align-items-center gap-2 p-3 rounded-3 m-0" style="border-left: 5px solid #dc2626; background-color: #fef2f2;">
+                                        <span class="fs-4">⚠️</span>
+                                        <div>
+                                            <strong class="text-danger">This election is closed.</strong>
+                                            <p class="text-muted small mb-0 mt-1">Voting is no longer allowed. Contact system administrator for details.</p>
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                // Render the voting form
+                                let candidatesHtml = '';
+                                election.candidates.forEach(cand => {
+                                    const photoHtml = cand.photo_url 
+                                        ? `<img src="${cand.photo_url}" class="rounded-circle border border-3 mb-2" style="width: 100px; height: 100px; object-fit: cover; border-color: ${cand.party_color || 'var(--primary)'} !important;" alt="${cand.name}">`
+                                        : `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-3 mb-2 fs-1 text-secondary" style="width: 100px; height: 100px; border-color: ${cand.party_color || 'var(--primary)'} !important;">👤</div>`;
+                                        
+                                    candidatesHtml += `
+                                        <div class="col-md-6 col-lg-4">
+                                            <label class="card h-100 candidate-card p-3 cursor-pointer d-flex flex-column align-items-center text-center justify-content-between position-relative" style="--candidate-color: ${cand.party_color};">
+                                                <div class="w-100 d-flex justify-content-start">
+                                                    <input type="radio" name="candidate" value="${cand.id}" data-party="${cand.party_affinity}" data-color="${cand.party_color}" class="form-check-input flex-shrink-0" required>
+                                                </div>
+                                                <div class="my-3">
+                                                    ${photoHtml}
+                                                    <h4 class="h6 fw-bold text-dark mb-1">${cand.party_symbol ? cand.party_symbol + ' ' : ''}${cand.name}</h4>
+                                                    <span class="text-muted small fw-semibold d-block mt-1">${cand.party_affinity}</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    `;
+                                });
+                                
+                                html += `
+                                    <form method="POST" action="/cast-vote/${election.id}/">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken') || ''}">
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold text-dark mb-3">Choose your Candidate (${stateName}):</label>
+                                            <div class="row g-3">
+                                                ${candidatesHtml}
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary-custom px-4 py-2 mt-2">Submit Vote</button>
+                                    </form>
+                                `;
+                            }
+                            
+                            html += `
+                                </div>
+                            </div>
+                            `;
+                        });
+                        
+                        container.innerHTML = html;
+                        attachRadioListeners();
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn("Polling error:", err);
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         // Check if voter successfully voted (detected from Django success message in base.html)
         const successMessages = document.querySelectorAll(".message-banner.success");
@@ -340,22 +497,8 @@
             triggerConfettiCelebration();
         }
 
-        // Listen to changes on candidate radio options to dynamically style the submit button
-        const candidateRadios = document.querySelectorAll('input[name="candidate"]');
-        candidateRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                const color = this.getAttribute('data-color') || 'var(--primary)';
-                
-                // Find submit button in the closest form
-                const submitBtn = this.closest('form').querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.style.setProperty('background-color', color, 'important');
-                    submitBtn.style.setProperty('border-color', color, 'important');
-                    submitBtn.style.setProperty('color', '#ffffff', 'important');
-                    submitBtn.style.setProperty('box-shadow', `0 4px 12px ${color}40`, 'important');
-                }
-            });
-        });
+        // Initialize listeners
+        attachRadioListeners();
 
         // Simple hash navigation support
         const hash = window.location.hash;
@@ -375,6 +518,9 @@
                 history.pushState(null, null, hashVal);
             });
         });
+
+        // Initialize polling intervals
+        setInterval(pollVoterDashboard, 5000);
     });
 
     function triggerConfettiCelebration() {

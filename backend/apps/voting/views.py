@@ -12,7 +12,16 @@ def cast_vote(request, election_id):
 
     if request.method == "POST":
         candidate_id = request.POST.get('candidate')
-        election = get_object_or_404(Election, id=election_id, is_active=True)
+        try:
+            election = Election.objects.get(id=election_id)
+        except Election.DoesNotExist:
+            messages.error(request, "This election does not exist.")
+            return redirect('voter_dashboard')
+
+        if not election.is_active:
+            messages.error(request, "This election has been closed by the administrator.")
+            return redirect('voter_dashboard')
+
         candidate = get_object_or_404(Candidate, id=candidate_id, election=election)
         if not Vote.objects.filter(voter=request.user, election=election).exists():
             Vote.objects.create(voter=request.user, election=election, candidate=candidate)

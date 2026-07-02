@@ -133,8 +133,9 @@ def voter_dashboard_ap(request):
     if request.user.state != 'ap':
         return redirect('voter_dashboard')
         
-    elections = Election.objects.filter(is_active=True, state='ap')
     voted = Vote.objects.filter(voter=request.user).values_list('election_id', flat=True)
+    from django.db.models import Q
+    elections = Election.objects.filter(Q(state='ap') & (Q(is_active=True) | Q(id__in=voted)))
     
     total_voters = CustomUser.objects.filter(role='voter', state='ap').count()
     total_voted = Vote.objects.filter(voter__state='ap').values('voter').distinct().count()
@@ -160,8 +161,9 @@ def voter_dashboard_tg(request):
     if request.user.state != 'tg':
         return redirect('voter_dashboard')
         
-    elections = Election.objects.filter(is_active=True, state='tg')
     voted = Vote.objects.filter(voter=request.user).values_list('election_id', flat=True)
+    from django.db.models import Q
+    elections = Election.objects.filter(Q(state='tg') & (Q(is_active=True) | Q(id__in=voted)))
     
     total_voters = CustomUser.objects.filter(role='voter', state='tg').count()
     total_voted = Vote.objects.filter(voter__state='tg').values('voter').distinct().count()
@@ -187,8 +189,9 @@ def voter_dashboard_chennai(request):
     if request.user.state != 'chennai':
         return redirect('voter_dashboard')
         
-    elections = Election.objects.filter(is_active=True, state='chennai')
     voted = Vote.objects.filter(voter=request.user).values_list('election_id', flat=True)
+    from django.db.models import Q
+    elections = Election.objects.filter(Q(state='chennai') & (Q(is_active=True) | Q(id__in=voted)))
     
     total_voters = CustomUser.objects.filter(role='voter', state='chennai').count()
     total_voted = Vote.objects.filter(voter__state='chennai').values('voter').distinct().count()
@@ -680,6 +683,51 @@ def verify_receipt_api(request):
         return JsonResponse(data)
     except (ValueError, Vote.DoesNotExist):
         return JsonResponse({'success': False, 'error': 'Receipt code not found in voting registry.'})
+
+
+@login_required
+@never_cache
+def voter_elections_api(request):
+    if request.user.role != 'voter':
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    state = request.user.state
+    voted = Vote.objects.filter(voter=request.user).values_list('election_id', flat=True)
+    
+    from django.db.models import Q
+    elections = Election.objects.filter(Q(state=state) & (Q(is_active=True) | Q(id__in=voted)))
+    
+    total_voters = CustomUser.objects.filter(role='voter', state=state).count()
+    total_voted = Vote.objects.filter(voter__state=state).values('voter').distinct().count()
+    turnout_pct = round((total_voted / total_voters * 100), 1) if total_voters > 0 else 0.0
+    
+    elections_data = []
+    for election in elections:
+        candidates_data = []
+        for cand in election.candidates.all():
+            candidates_data.append({
+                'id': cand.id,
+                'name': cand.name,
+                'party_affinity': cand.party_affinity,
+                'party_symbol': cand.party_symbol,
+                'party_color': cand.party_color,
+                'photo_url': cand.photo_url or '',
+            })
+            
+        elections_data.append({
+            'id': election.id,
+            'title': election.title,
+            'description': election.description,
+            'is_active': election.is_active,
+            'has_voted': election.id in voted,
+            'candidates': candidates_data,
+        })
+        
+    return JsonResponse({
+        'elections': elections_data,
+        'turnout_pct': turnout_pct,
+        'voted_count': len(voted),
+    })
 
 
 @login_required

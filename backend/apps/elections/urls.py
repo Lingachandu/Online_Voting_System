@@ -14,6 +14,7 @@ urlpatterns = [
     path('candidate/add/', views.add_candidate, name='add_candidate'),
     path('candidate/remove/<int:candidate_id>/', views.remove_candidate, name='remove_candidate'),
     path('api/live-stats/', views.live_stats_api, name='live_stats_api'),
+    path('api/voter-elections/', views.voter_elections_api, name='voter_elections_api'),
     path('api/verify-receipt/', views.verify_receipt_api, name='verify_receipt_api'),
     path('vote/remove/<int:vote_id>/', views.remove_vote, name='remove_vote'),
     path('voter/remove/<int:voter_id>/', views.remove_voter, name='remove_voter'),

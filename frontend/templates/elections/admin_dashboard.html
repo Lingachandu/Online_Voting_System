@@ -581,6 +581,15 @@ function getCandidateColor(cand, index) {
     return fallbacks[index % fallbacks.length];
 }
 
+function updatePageCsrfTokens() {
+    const token = getCookie('csrftoken');
+    if (token) {
+        document.querySelectorAll('input[name="csrfmiddlewaretoken"]').forEach(input => {
+            input.value = token;
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const electionsData = {{ elections_json|safe }};
     electionsData.forEach(election => {
@@ -590,6 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     updateStateWinnerLines(electionsData);
+    updatePageCsrfTokens();
 
     setInterval(fetchLiveStats, 5000);
     setTimeout(fetchLiveStats, 1500);
@@ -827,6 +837,7 @@ async function fetchLiveStats() {
             btn.classList.add('pulse-flash');
             setTimeout(() => btn.classList.remove('pulse-flash'), 600);
         }
+        updatePageCsrfTokens();
     }
 }
 
